@@ -1,0 +1,26 @@
+# ── Core data processing ──────────────────────────────────────────────────
+pandas>=2.2.0
+openpyxl>=3.1.2           # Excel (.xlsx) read support for pd.read_excel
+
+# ── LangChain v0.3 core ───────────────────────────────────────────────────
+langchain>=0.3.0,<0.4.0
+langchain-core>=0.3.0,<0.4.0
+langchain-community>=0.3.0,<0.4.0
+
+# ── LangChain experimental (PandasDataFrameAgent) ─────────────────────────
+langchain-experimental>=0.3.0,<0.4.0
+
+# ── LLM + Embeddings (OpenAI) ─────────────────────────────────────────────
+langchain-openai>=0.2.0,<0.3.0
+openai>=1.40.0
+
+# ── Vector store ──────────────────────────────────────────────────────────
+langchain-milvus>=0.1.5           # official langchain-milvus package (NOT langchain-community)
+pymilvus>=2.4.0                   # Milvus Python SDK
+
+# ── Optional: HuggingFace embeddings (swap for OpenAI if preferred) ───────
+# langchain-huggingface>=0.1.0
+# sentence-transformers>=3.0.0
+
+# ── Dev/testing utilities ─────────────────────────────────────────────────
+python-dotenv>=1.0.0              # load .env file for OPENAI_API_KEY etc.
