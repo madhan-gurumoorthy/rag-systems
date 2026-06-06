@@ -7,16 +7,19 @@ Workflow
 --------
   1. Load and process the raw incident Excel log.
   2. Display the monthly aggregation table.
-  3. Upsert the monthly summaries into the Milvus vector store.
-  4. Build the unified AgentExecutor (Pandas + Milvus tools).
+  3. Upsert the monthly summaries into the ChromaDB vector store (local, in-process).
+  4. Build the unified AgentExecutor (Pandas + ChromaDB tools).
   5. Launch an interactive CLI loop for natural-language queries.
 
 Usage
 -----
-    # Minimal — uses all defaults
+    # Step 0 — generate sample data (first time only)
+    python generate_sample_data.py
+
+    # Step 1 — run the pipeline
     python main.py --file incidents.xlsx
 
-    # Override sheet and skip Milvus upsert (e.g. Milvus already populated)
+    # Override sheet and skip ChromaDB upsert (e.g. already populated)
     python main.py --file incidents.xlsx --sheet "Sheet2" --no-upsert
 
     # Run in batch mode (non-interactive) with a single question
@@ -24,10 +27,12 @@ Usage
 
 Environment Variables (required)
 ---------------------------------
-    OPENAI_API_KEY      – OpenAI API key (for LLM + embeddings)
-    MILVUS_URI          – Milvus URI (default: http://localhost:19530)
-    MILVUS_TOKEN        – Milvus/Zilliz token (optional, for cloud)
-    MILVUS_COLLECTION   – Collection name (default: incident_monthly_summaries)
+    GOOGLE_API_KEY   – Google Gemini API key (free tier at https://ai.google.dev)
+
+Optional
+--------
+    CHROMA_PERSIST_DIR   – local directory for ChromaDB storage (default: ./chroma_db)
+    CHROMA_COLLECTION    – collection name (default: incident_monthly_summaries)
 """
 
 from __future__ import annotations
@@ -38,9 +43,12 @@ import os
 import sys
 
 import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()  # loads GOOGLE_API_KEY (and others) from .env if present
 
 from incident_processor import process_incident_log
-from milvus_store import get_vector_store, store_monthly_summary
+from chroma_store import get_vector_store, store_monthly_summary
 from agent import build_agent, ask
 
 # ---------------------------------------------------------------------------
@@ -61,11 +69,13 @@ logger = logging.getLogger(__name__)
 
 def _check_env() -> None:
     """Warn about missing required environment variables."""
-    missing = [v for v in ["OPENAI_API_KEY"] if not os.environ.get(v)]
+    missing = [v for v in ["GOOGLE_API_KEY"] if not os.environ.get(v)]
     if missing:
         logger.error(
             "Missing required environment variable(s): %s\n"
-            "Set them before running: export OPENAI_API_KEY=sk-...",
+            "Get a free key at https://ai.google.dev then run:\n"
+            "  export GOOGLE_API_KEY=AIza...\n"
+            "Or add it to a .env file in this directory.",
             ", ".join(missing),
         )
         sys.exit(1)
@@ -103,8 +113,8 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model",
-        default="gpt-4o-mini",
-        help="OpenAI model name for the agent LLM",
+        default="gemini-1.5-flash",
+        help="Google Gemini model name for the agent LLM (default: gemini-1.5-flash)",
     )
     parser.add_argument(
         "--milvus-k",

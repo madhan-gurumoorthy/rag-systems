@@ -10,17 +10,17 @@ langchain-community>=0.3.0,<0.4.0
 # ── LangChain experimental (PandasDataFrameAgent) ─────────────────────────
 langchain-experimental>=0.3.0,<0.4.0
 
-# ── LLM + Embeddings (OpenAI) ─────────────────────────────────────────────
-langchain-openai>=0.2.0,<0.3.0
-openai>=1.40.0
+# ── LLM (Google Gemini — free tier, get key at https://ai.google.dev) ─────
+langchain-google-genai>=2.0.0     # ChatGoogleGenerativeAI
+google-generativeai>=0.8.0        # underlying Google SDK
 
-# ── Vector store ──────────────────────────────────────────────────────────
-langchain-milvus>=0.1.5           # official langchain-milvus package (NOT langchain-community)
-pymilvus>=2.4.0                   # Milvus Python SDK
+# ── Embeddings (HuggingFace — runs fully local, no API key required) ──────
+langchain-huggingface>=0.1.0
+sentence-transformers>=3.0.0
 
-# ── Optional: HuggingFace embeddings (swap for OpenAI if preferred) ───────
-# langchain-huggingface>=0.1.0
-# sentence-transformers>=3.0.0
+# ── Vector store (ChromaDB — runs in-process, no server required) ─────────
+chromadb>=0.5.0                   # embedded vector store
+langchain-chroma>=0.1.0           # LangChain integration for Chroma
 
 # ── Dev/testing utilities ─────────────────────────────────────────────────
-python-dotenv>=1.0.0              # load .env file for OPENAI_API_KEY etc.
+python-dotenv>=1.0.0              # load .env file for GOOGLE_API_KEY etc.

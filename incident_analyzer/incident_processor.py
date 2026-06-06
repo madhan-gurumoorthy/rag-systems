@@ -99,7 +99,7 @@ def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
     # Parse the date column
-    df[DATE_COLUMN] = pd.to_datetime(df[DATE_COLUMN], errors="coerce", infer_datetime_format=True)
+    df[DATE_COLUMN] = pd.to_datetime(df[DATE_COLUMN], errors="coerce")
     unparsed = df[DATE_COLUMN].isna().sum()
     if unparsed > 0:
         logger.warning("%d rows have unparseable '%s' values and will be dropped.", unparsed, DATE_COLUMN)

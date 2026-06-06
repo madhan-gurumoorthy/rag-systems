@@ -44,6 +44,7 @@ Usage
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any
 
 import pandas as pd
@@ -51,24 +52,26 @@ from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import Tool
 from langchain_experimental.agents import create_pandas_dataframe_agent
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
-from milvus_store import get_vector_store, format_retrieved_docs
+from chroma_store import get_vector_store, format_retrieved_docs
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# LLM factory (swap model / provider here if needed)
+# LLM factory (Google Gemini — free tier)
 # ---------------------------------------------------------------------------
 
-def _build_llm(model: str = "gpt-4o-mini", temperature: float = 0) -> ChatOpenAI:
+def _build_llm(model: str = "gemini-1.5-flash", temperature: float = 0) -> ChatGoogleGenerativeAI:
     """
-    Build the ChatOpenAI LLM.
+    Build the ChatGoogleGenerativeAI LLM.
 
-    Requires OPENAI_API_KEY in the environment.
-    Change `model` to "gpt-4o" for higher quality at higher cost.
+    Requires GOOGLE_API_KEY in the environment.
+    Free tier: https://ai.google.dev  (1,500 req/day for gemini-1.5-flash).
+    Upgrade to "gemini-1.5-pro" for higher quality.
     """
-    return ChatOpenAI(model=model, temperature=temperature)
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    return ChatGoogleGenerativeAI(model=model, temperature=temperature, google_api_key=api_key)
 
 
 # ---------------------------------------------------------------------------
@@ -78,7 +81,7 @@ def _build_llm(model: str = "gpt-4o-mini", temperature: float = 0) -> ChatOpenAI
 def _build_pandas_tool(
     categorized_df: pd.DataFrame,
     monthly_df: pd.DataFrame,
-    llm: ChatOpenAI,
+    llm: ChatGoogleGenerativeAI,
 ) -> Tool:
     """
     Wrap a PandasDataFrameAgent over two DataFrames as a single Tool.
@@ -191,7 +194,7 @@ def _build_prompt() -> ChatPromptTemplate:
 def build_agent(
     categorized_df: pd.DataFrame,
     monthly_df: pd.DataFrame,
-    model: str = "gpt-4o-mini",
+    model: str = "gemini-1.5-flash",
     milvus_k: int = 3,
     verbose: bool = True,
 ) -> AgentExecutor:
@@ -205,7 +208,7 @@ def build_agent(
     monthly_df : pd.DataFrame
         Monthly pivot table (output of ``aggregate_by_month()``).
     model : str
-        OpenAI chat model name.  Defaults to "gpt-4o-mini".
+        Google Gemini model name.  Defaults to "gemini-1.5-flash" (free tier).
     milvus_k : int
         Number of historical documents to retrieve per similarity search.
     verbose : bool
