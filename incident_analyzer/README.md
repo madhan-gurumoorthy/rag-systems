@@ -1,7 +1,9 @@
 # Incident Analyzer - End-to-End Documentation
 
 ## Overview
-The Incident Analyzer is a Retrieval-Augmented Generation (RAG) system that processes incident data from Excel files, aggregates incidents by month, stores summaries in a vector database (ChromaDB), and provides an intelligent agent that answers natural language questions about incident trends.
+The Incident Analyzer is a Retrieval-Augmented Generation (RAG) system that processes incident data from Excel files, aggregates incidents by month, stores summaries in a vector database, and provides an intelligent agent that answers natural language questions about incident trends.
+
+**Vector Store Options**: ChromaDB (default, lightweight) or Milvus (production-scale)
 
 ## Architecture
 
@@ -14,8 +16,8 @@ Monthly Summaries
         ↓
     ┌───┴───┐
     ↓       ↓
-Pandas   ChromaDB
-Tool     Tool (vector store)
+Pandas   Vector Store
+Tool     (ChromaDB or Milvus)
     │       │
     └───┬───┘
         ↓
@@ -26,6 +28,10 @@ Google Gemini LLM
     User Answer
 ```
 
+**Vector Store Selection**:
+- **ChromaDB** (default): Lightweight, in-process, perfect for development
+- **Milvus**: Production-grade, scalable for large datasets
+
 ## System Components
 
 ### 1. **incident_processor.py**
@@ -34,11 +40,21 @@ Google Gemini LLM
 - Aggregates incidents by month
 - Generates human-readable monthly summaries
 
-### 2. **chroma_store.py**
+### 2. **Vector Store (Choose One)**
+
+#### **chroma_store.py** (Default)
 - Initializes ChromaDB vector store (in-process, local storage)
 - Generates embeddings using HuggingFace sentence-transformers
 - Stores monthly summaries with metadata
 - Provides similarity search capabilities
+- Best for: Development, small projects, <100K documents
+
+#### **milvus_store.py** (Production)
+- Initializes Milvus vector store (scalable, distributed)
+- Same embedding and storage interface as ChromaDB
+- Provides high-performance similarity search
+- Best for: Production, large scale, >1M documents
+- Requires: Docker (see VECTOR_STORE_GUIDE.md)
 
 ### 3. **semantic_chunking_engine.py**
 - Splits documents into semantically coherent chunks
@@ -54,14 +70,15 @@ Google Gemini LLM
 ### 5. **agent.py**
 - Builds LangChain AgentExecutor with two tools:
   - **pandas_analysis_tool**: Query current month data with PandasDataFrameAgent
-  - **historical_comparison_tool**: Search similar historical months in ChromaDB
+  - **historical_comparison_tool**: Search similar historical months in vector store
 - Integrates Google Gemini as the LLM
 
 ### 6. **main.py**
 - Orchestration entry point
 - Loads incident data from Excel
-- Upsets monthly summaries into ChromaDB
+- Upserts monthly summaries into chosen vector store (ChromaDB or Milvus)
 - Launches interactive CLI or batch query mode
+- Supports `--vector-db` flag to switch between stores
 
 ## Installation & Setup
 
@@ -90,6 +107,8 @@ cp .env.example .env
 ```
 
 4. **Run the Program**
+
+**With ChromaDB (default, no extra setup)**:
 ```bash
 # Interactive mode
 python main.py --file incidents.xlsx
@@ -97,6 +116,34 @@ python main.py --file incidents.xlsx
 # Batch mode (single query)
 python main.py --file incidents.xlsx --query "How many incidents this month?"
 ```
+
+**With Milvus (requires Docker)**:
+```bash
+# Step 1: Start Milvus server
+docker run -d --name milvus -p 19530:19530 milvusdb/milvus:latest
+
+# Step 2: Install Milvus client
+pip install pymilvus>=2.4.0
+
+# Step 3: Run with Milvus
+python main.py --file incidents.xlsx --vector-db milvus
+
+# Batch mode with Milvus
+python main.py --file incidents.xlsx --vector-db milvus --query "How many incidents?"
+```
+
+## Vector Store Comparison
+
+| Feature | ChromaDB | Milvus |
+|---------|----------|--------|
+| Setup | Zero (in-process) | Docker required |
+| Best for | Dev, small projects | Production, scale |
+| Data size | <100K docs | >1M docs |
+| Search latency | 20-100ms | 10-50ms |
+| Infrastructure | None | Docker/K8s |
+| Cost | Free | Free (self-hosted) |
+
+**See `VECTOR_STORE_GUIDE.md` for detailed configuration.**
 
 ## How It Works - Step by Step
 
@@ -108,7 +155,9 @@ python main.py --file incidents.xlsx --query "How many incidents this month?"
 ### Step 2: Embedding & Storage
 - Converts each monthly summary to text: "In 2025-05: 15 total incidents..."
 - Generates embeddings using local HuggingFace model (sentence-transformers/all-MiniLM-L6-v2)
-- Stores embeddings + metadata in ChromaDB (./chroma_db directory)
+- Stores embeddings + metadata in chosen vector store:
+  - **ChromaDB** (default): ./chroma_db directory (in-process)
+  - **Milvus** (--vector-db milvus): Milvus server at localhost:19530
 
 ### Step 3: Agent Building
 - Creates two tools:
@@ -211,10 +260,11 @@ Top 5 categories:
 
 ```
 incident_analyzer/
-├── main.py                          # Entry point
+├── main.py                          # Entry point (orchestrates vector store selection)
 ├── agent.py                         # Agent configuration & LLM setup
 ├── incident_processor.py            # Data processing logic
-├── chroma_store.py                  # Vector store management
+├── chroma_store.py                  # ChromaDB vector store management
+├── milvus_store.py                  # Milvus vector store management
 ├── semantic_chunking_engine.py      # Document chunking
 ├── components/
 │   ├── __init__.py
@@ -225,26 +275,59 @@ incident_analyzer/
 ├── .env.example                     # Environment template
 ├── incidents.xlsx                   # Sample data (Excel)
 ├── chroma_db/                       # ChromaDB storage (auto-created)
+├── VECTOR_STORE_GUIDE.md           # Vector store configuration guide
 └── README.md                        # This file
 ```
 
 ## Configuration
 
 ### Environment Variables
+
+**Required**:
 ```
-GOOGLE_API_KEY          # Required: Google Gemini API key
-CHROMA_PERSIST_DIR      # Optional: ChromaDB storage path (default: ./chroma_db)
-CHROMA_COLLECTION       # Optional: Collection name (default: incident_monthly_summaries)
+GOOGLE_API_KEY          # Google Gemini API key (free tier at https://ai.google.dev)
+```
+
+**ChromaDB (Optional)**:
+```
+CHROMA_PERSIST_DIR      # ChromaDB storage path (default: ./chroma_db)
+CHROMA_COLLECTION       # Collection name (default: incident_monthly_summaries)
+```
+
+**Milvus (Optional)**:
+```
+MILVUS_HOST             # Milvus server host (default: localhost)
+MILVUS_PORT             # Milvus server port (default: 19530)
+MILVUS_COLLECTION       # Collection name (default: incident_monthly_summaries)
 ```
 
 ### CLI Arguments
 ```
 --file              # Path to incident Excel file (required)
---sheet             # Sheet name or index in Excel (default: 0)
---no-upsert         # Skip upserting to ChromaDB if already populated
---query             # Run single query in batch mode (no interactive loop)
---model             # LLM model name (default: gemini-1.5-flash)
+--sheet             # Sheet name or index (default: 0)
+--vector-db         # Vector store to use: 'chroma' or 'milvus' (default: chroma)
+--no-upsert         # Skip upserting to vector store if already populated
+--query             # Run single query in batch mode (non-interactive)
+--model             # LLM model (default: gemini-1.5-flash)
 --milvus-k          # Number of historical reports to retrieve (default: 3)
+```
+
+### Examples
+```bash
+# Use ChromaDB (default)
+python main.py --file incidents.xlsx
+
+# Use Milvus
+python main.py --file incidents.xlsx --vector-db milvus
+
+# Skip vector store upsert (use cached data)
+python main.py --file incidents.xlsx --no-upsert
+
+# Batch query mode
+python main.py --file incidents.xlsx --query "How many incidents this month?"
+
+# Combine options
+python main.py --file incidents.xlsx --vector-db milvus --query "Compare May vs June"
 ```
 
 ## Key Features
@@ -330,6 +413,26 @@ The majority of incidents are Medium and Low priority, which is good for system 
 You: exit
 Goodbye!
 ```
+
+---
+
+## Vector Store Options
+
+The system now supports two vector databases with seamless switching:
+
+### ChromaDB (Default)
+- **Setup**: Zero - runs in-process automatically
+- **Storage**: Local directory (`./chroma_db`)
+- **Best for**: Development, testing, <100K documents
+- **Command**: `python main.py --file incidents.xlsx`
+
+### Milvus (Production)
+- **Setup**: Docker container required
+- **Storage**: Milvus server (localhost:19530 by default)
+- **Best for**: Production, large scale, >1M documents
+- **Command**: `python main.py --file incidents.xlsx --vector-db milvus`
+
+**See `VECTOR_STORE_GUIDE.md` for detailed setup and configuration.**
 
 ---
 
