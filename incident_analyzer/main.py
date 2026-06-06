@@ -48,7 +48,12 @@ from dotenv import load_dotenv
 load_dotenv()  # loads GOOGLE_API_KEY (and others) from .env if present
 
 from incident_processor import process_incident_log
-from chroma_store import get_vector_store, store_monthly_summary
+
+# Vector store imports are now dynamic in main() based on --vector-db flag
+# To switch between ChromaDB and Milvus:
+#   python main.py --file incidents.xlsx --vector-db chroma  # Default: ChromaDB
+#   python main.py --file incidents.xlsx --vector-db milvus  # Use Milvus
+
 from agent import build_agent, ask
 
 # ---------------------------------------------------------------------------
@@ -87,7 +92,7 @@ def _check_env() -> None:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Incident Analytics Pipeline — LangChain + Milvus",
+        description="Incident Analytics Pipeline — LangChain + Vector Store (ChromaDB or Milvus)",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -101,10 +106,16 @@ def _parse_args() -> argparse.Namespace:
         help="Sheet name or zero-based index to read from the Excel file",
     )
     parser.add_argument(
+        "--vector-db",
+        choices=["chroma", "milvus"],
+        default="chroma",
+        help="Vector database to use (default: chroma)",
+    )
+    parser.add_argument(
         "--no-upsert",
         action="store_true",
         default=False,
-        help="Skip upserting monthly summaries into Milvus (use if already stored)",
+        help="Skip upserting monthly summaries (use if already stored)",
     )
     parser.add_argument(
         "--query",
@@ -180,19 +191,27 @@ def main() -> None:
     args = _parse_args()
     _check_env()
 
+    # ── Dynamic import based on --vector-db flag ──────────────────────────
+    if args.vector_db == "milvus":
+        from milvus_store import get_vector_store, store_monthly_summary
+        logger.info("Using Milvus vector store")
+    else:
+        from chroma_store import get_vector_store, store_monthly_summary
+        logger.info("Using ChromaDB vector store")
+
     # ── Step 1: Process the incident log ─────────────────────────────────
     logger.info("Processing incident log: %s", args.file)
     categorized_df, monthly_df = process_incident_log(args.file, sheet_name=args.sheet)
     _print_monthly_table(monthly_df)
 
-    # ── Step 2: Upsert monthly summaries into Milvus ─────────────────────
+    # ── Step 2: Upsert monthly summaries into vector store ────────────────
     if not args.no_upsert:
-        logger.info("Connecting to Milvus and upserting monthly summaries …")
+        logger.info(f"Connecting to {args.vector_db} and upserting monthly summaries …")
         vector_store = get_vector_store()
         store_monthly_summary(monthly_df, vector_store=vector_store)
-        logger.info("Milvus upsert complete.")
+        logger.info(f"{args.vector_db.capitalize()} upsert complete.")
     else:
-        logger.info("Skipping Milvus upsert (--no-upsert flag set).")
+        logger.info(f"Skipping {args.vector_db} upsert (--no-upsert flag set).")
 
     # ── Step 3: Build the agent ───────────────────────────────────────────
     logger.info("Building AgentExecutor …")
