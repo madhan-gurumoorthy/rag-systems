@@ -1,6 +1,0 @@
-profiles:
-  - api-lint
-  - contract-test
-  - functional-test
-  - integration-test
-  - e2e-test
