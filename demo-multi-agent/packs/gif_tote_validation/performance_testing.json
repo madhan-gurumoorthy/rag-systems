@@ -1,0 +1,49 @@
+{
+  "projectName": "matbot-multi-agents",
+  "scmUrl": "",
+  "request": [
+    {
+      "transactionName": "health-check-baseline",
+      "rampUp": {
+        "totalVU": 10,
+        "initaldelay": 0,
+        "rampupvu": 2,
+        "rampduration": 1,
+        "holdrampup": 5,
+        "duration": 5
+      },
+      "api": [
+        {
+          "name": "healthz",
+          "method": "GET",
+          "protocol": "HTTPS",
+          "url": "${appurl}/healthz",
+          "headers": {
+            "accept": "*/*"
+          },
+          "wait": 120
+        },
+        {
+          "name": "factory-health",
+          "method": "GET",
+          "protocol": "HTTPS",
+          "url": "${appurl}/api/factory/health",
+          "headers": {
+            "accept": "*/*"
+          },
+          "wait": 120
+        },
+        {
+          "name": "agent-card",
+          "method": "GET",
+          "protocol": "HTTPS",
+          "url": "${appurl}/.well-known/agents.json",
+          "headers": {
+            "accept": "*/*"
+          },
+          "wait": 120
+        }
+      ]
+    }
+  ]
+}

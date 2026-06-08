@@ -1,0 +1,43 @@
+# Policy Configuration — GIF Tote Validation Agent
+#
+# Defines approval gates, blast radius limits, and feature flags.
+
+approvals:
+  required_for_cards:
+    - RBK-GIF-04    # iSAM dimension update requires approval (supplier dims write)
+  # QRY-ISAM-01 is mock-only (fixed email); list tools here when real ISAM writes need approval
+  required_for_tools: []
+  approval_channel: concord
+  concord_entry_point: "gif-tote-approval"
+  timeout_minutes: 30
+  ad_group: MerchantOps-ItemSetup-Approvers  # Update to your team's actual AD group
+
+blast_radius:
+  max_batch_size: 1    # Process one incident at a time
+  limits:
+    max_routing_per_hour: 20
+    max_isam_updates_per_hour: 5
+
+permitted_actions:
+  - "Automated ticket routing (assignment group changes to OPS - eComFulfillment - Picking)"
+  - "Work notes and comments updates on ServiceNow incidents"
+  - "Merchant outreach emails via SMTP"
+  - "Slack posts to #ssot-gif channel for Gold dimension updates"
+  - "iSAM dimension updates (supplier dimensions only — requires approval)"
+  - "Read-only: original incident data, GIF/IQS/Uber API data"
+
+denied_actions:
+  - "Deleting or closing incidents without validation"
+  - "Modifying Gold dimensions directly (must go through SSOT team)"
+  - "Changing incident priority or impact"
+  - "Creating new incidents"
+
+feature_flags:
+  enable_rag_fallback: true
+  enable_auto_close: true
+  enable_batch_operations: false
+  enable_teams_bot: false
+  enable_email_ingress: false
+  enable_merchant_outreach: true
+  enable_ssot_slack_post: true
+  enable_isam_direct_update: false   # Set to true once iSAM API is available

@@ -1,0 +1,108 @@
+/* LD Portable – Rating */
+/* Rating */
+.ld-rating-container {
+  align-items: center;
+  display: inline-flex;
+}
+.ld-rating-container.ld-rating-white .ld-rating-count {
+  color: var(--ld-semantic-color-text-inverse, #ffffff);
+}
+
+.ld-rating-large {
+  gap: 0.125rem;
+}
+.ld-rating-large .ld-rating-count {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5rem;
+}
+
+.ld-rating-small {
+  gap: 0.125rem;
+}
+.ld-rating-small .ld-rating-count {
+}
+
+/* RatingStar */
+.ld-rating-ratingstar-large {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.ld-rating-ratingstar-small {
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
+.ld-rating-ratingstar-star {
+  stroke: var(--ld-semantic-color-rating-border, #cc851a);
+}
+
+.ld-rating-ratingstar-empty {
+  fill: #ffffff00;
+}
+.ld-rating-ratingstar-empty.ld-rating-ratingstar-large {
+  stroke-width: 0.078125rem;
+}
+.ld-rating-ratingstar-empty.ld-rating-ratingstar-small {
+  stroke-width: 0.046875rem;
+}
+
+.ld-rating-ratingstar-filled {
+  fill: var(--ld-semantic-color-rating-fill, #ffc220);
+}
+.ld-rating-ratingstar-filled.ld-rating-ratingstar-large {
+  stroke-width: 0.109375rem;
+}
+.ld-rating-ratingstar-filled.ld-rating-ratingstar-small {
+  stroke-width: 0.075rem;
+}
+
+.ld-rating-ratingstar-halfFilled .ld-rating-ratingstar-fill {
+  fill: var(--ld-semantic-color-rating-fill, #ffc220);
+  stroke: #ffffff00;
+}
+.ld-rating-ratingstar-halfFilled .ld-rating-ratingstar-empty {
+  fill: #ffffff00;
+}
+.ld-rating-ratingstar-halfFilled.ld-rating-ratingstar-large {
+  stroke-width: 0.109375rem;
+}
+.ld-rating-ratingstar-halfFilled.ld-rating-ratingstar-small {
+  stroke-width: 0.075rem;
+}
+
+.ld-rating-ratingstar-white.ld-rating-ratingstar-star {
+  stroke: var(--ld-semantic-color-rating-border-inverse, #ffffff);
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-empty {
+  fill: #00000000;
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-empty.ld-rating-ratingstar-large {
+  stroke-width: 0.078125rem;
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-empty.ld-rating-ratingstar-small {
+  stroke-width: 0.046875rem;
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-filled {
+  fill: var(--ld-semantic-color-rating-fill-inverse, #ffffff);
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-filled.ld-rating-ratingstar-large {
+  stroke-width: 0.109375rem;
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-filled.ld-rating-ratingstar-small {
+  stroke-width: 0.075rem;
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-halfFilled .ld-rating-ratingstar-fill {
+  fill: var(--ld-semantic-color-rating-fill-inverse, #ffffff);
+  stroke: #00000000;
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-halfFilled .ld-rating-ratingstar-empty {
+  fill: #00000000;
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-halfFilled.ld-rating-ratingstar-large {
+  stroke-width: 0.109375rem;
+}
+.ld-rating-ratingstar-white.ld-rating-ratingstar-halfFilled.ld-rating-ratingstar-small {
+  stroke-width: 0.075rem;
+}

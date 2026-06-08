@@ -1,0 +1,38 @@
+[
+  {
+    "id": "eval-healthy-host",
+    "description": "Normal host should close as HEALTHY.",
+    "input": {
+      "incident_number": "INC-DEVOPS-001",
+      "incident_text": "Host=host-1 service=nginx severity=low",
+      "hostname": "host-1",
+      "service_name": "nginx",
+      "severity": "low"
+    },
+    "expected": { "verdict": "HEALTHY", "runbook_card": "H1" }
+  },
+  {
+    "id": "eval-host-down",
+    "description": "Down host should trigger RESTART runbook.",
+    "input": {
+      "incident_number": "INC-DEVOPS-002",
+      "incident_text": "Host=down-host-7 service=kafka severity=high",
+      "hostname": "down-host-7",
+      "service_name": "kafka",
+      "severity": "high"
+    },
+    "expected": { "verdict": "RESTART_NEEDED", "runbook_card": "R1" }
+  },
+  {
+    "id": "eval-cpu-pegged",
+    "description": "High-CPU host should trigger RESTART runbook.",
+    "input": {
+      "incident_number": "INC-DEVOPS-003",
+      "incident_text": "Host=busy-host-2 service=postgres severity=medium",
+      "hostname": "busy-host-2",
+      "service_name": "postgres",
+      "severity": "medium"
+    },
+    "expected": { "verdict": "RESTART_NEEDED", "runbook_card": "R1" }
+  }
+]

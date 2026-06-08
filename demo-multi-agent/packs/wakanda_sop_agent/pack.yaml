@@ -1,0 +1,257 @@
+# Wakanda Inventory SOP Agent Pack
+#
+# Autonomous inventory-health query pipeline for Walmart item operations.
+# Covers global and node-level inventory, transactability diagnosis,
+# reservations, salescaps, event validation, and order-status checks.
+# All tools are read-only; no approval workflow or write actions.
+#
+# Model credentials are configured in agent_factory/infrastructure/secrets.toml
+# under [default.azure_chat] — NOT in this file.
+
+id: wakanda_sop_agent
+name: Wakanda Inventory SOP Agent
+version: 1.0.0
+description: >
+  Covers end-to-end autonomous inventory health queries for Walmart item
+  operations, including global and node-level inventory snapshots, OOS
+  transactability diagnosis, salescap analysis, event inventory validation,
+  order-status checks, and offer-level reservation reporting.
+  All diagnostic tools are read-only. No ticket writes or approvals.
+owner_team: ItemOps - Wakanda Platform
+tenant_id: walmart-itemops-wakanda
+default: false
+decision_engine: yaml_rules
+
+# A2A AgentCard projection — example prompts surfaced on the umbrella skill
+# so external discovery clients see the kinds of questions this pack answers.
+examples:
+  - "Why is offer 16C5E955309331BCB53AD26DE761B8B3 out of stock at node 10001275070?"
+  - "Check transactability for offer 16C5E955309331BCB53AD26DE761B8B3 nationally."
+  - "Why is quantity not updated for feed 18B150F08D8B5508AA71313FD6CB5AAA@AQkBCgA offer 16C5E955309331BCB53AD26DE761B8B3 node 10001275070?"
+tags:
+  - inventory
+  - oos
+  - transactability
+  - walmart-itemops
+
+model:
+  provider: azure_openai
+  model: gpt-4.1-mini
+  deployment: gpt-4.1-mini
+  api_version: "2024-10-21"
+  endpoint: https://wmtllmgateway.stage.walmart.com/wmtllmgateway
+  max_tokens: 4096
+  temperature: 0.1
+  extra_params: {}
+
+# Pre-triage gate — disabled: offer_id arrives inline in the query text.
+# There is no upstream ticket system to gate against.
+pre_triage:
+  enabled: false
+
+rules_engine: {}
+
+rag:
+  domain: wakanda_sop_agent
+  rag_query_prefix: "Wakanda inventory query SOP decision"
+  prompt_template: ''
+
+# ── Display labels ────────────────────────────────────────────────
+display:
+  tool_names:
+    diag_gli_01: "Global Inventory (Oasis)"
+    diag_node_01: "Node Inventory Snapshot"
+    diag_res_01: "Node Reservations"
+    diag_ei_01: "Enterprise Inventory Comparison"
+    diag_path_01: "Path Eligibility"
+    diag_lock_01: "Node Lock Details"
+    diag_bulk_01: "Offer-Level Nodes Inventory"
+    diag_event_01: "Event Inventory Validation"
+    diag_order_01: "Order Status"
+    diag_cap_01: "Sales Cap Details"
+    diag_trans_01: "Transactability Diagnosis"
+    diag_trans_nat_01: "National Transactability Diagnosis"
+    diag_offres_01: "Offer Reservations"
+    diag_hist_01: "Offer Inventory History"
+    diag_nodehist_01: "Node Inventory History"
+    diag_feed_01: "Feed Qty Update Check"
+    diag_preorder_01: "Preorder Eligibility"
+    diag_decision_matrix: "SOP Decision Matrix"
+  outcome_labels:
+    DATA_FOUND: "Data retrieved"
+    DATA_NOT_FOUND: "No data available"
+    FITS_QUERY: "Query answered successfully"
+    INSUFFICIENT_DATA: "Insufficient data — no results"
+    ESCALATE: "Escalation required — missing parameters or API error"
+    OOS_NODE: "Out of stock at node"
+    OOS_NATIONAL: "Out of stock nationally"
+    IN_STOCK: "In stock"
+    API_ERROR: "API error"
+    AUTH_ERROR: "Auth failed"
+    MISSING_PARAMS: "Required parameters not present"
+
+# ── Resolution status mapping ─────────────────────────────────────
+resolution_statuses:
+  statuses:
+    answered: "answered"
+    insufficient_data: "insufficient_data"
+    escalated: "escalated"
+  closure_pattern: '^[\s\-\*>#]*\**\s*status:\s*\**\s*(.+?)[\s\*]*$'
+  default_status: "answered"
+
+# ── Triage extraction ─────────────────────────────────────────────
+# The triage agent extracts these fields from the free-text query.
+triage_extraction:
+  fields:
+    - name: offer_id
+      aliases: ["offerId", "offer id", "offer_id"]
+      required: true
+    - name: node_id
+      aliases: ["nodeId", "node id", "node_id", "store", "storeId"]
+      required: false
+    - name: order_id
+      aliases: ["orderId", "order id", "order_id"]
+      required: false
+    - name: event_id
+      aliases: ["eventId", "event id", "event_id"]
+      required: false
+    - name: feed_id
+      aliases: ["feedId", "feed id", "feed_id", "feed batch", "batch id"]
+      required: false
+    - name: query_intent
+      aliases: []
+      required: false
+  symptom_rules:
+    - symptom: oos_node
+      keywords: ["out of stock at", "oos at", "not transactable at", "not available at", "diagnose at node", "why is offer", "why offer", "preorder", "lock", "eligibility"]
+    - symptom: oos_national
+      keywords: ["out of stock nationally", "oos national", "not transactable nationally", "national level", "global oos", "why is offer nationally"]
+    - symptom: order_issue
+      keywords: ["order issue", "order status", "order not found", "reservation issue", "order missing", "check order", "order id", "order:"]
+    - symptom: full_health
+      keywords: ["full health", "offer health", "full diagnosis", "complete check", "gli", "customer gli", "global inventory"]
+    - symptom: event_inventory
+      keywords: ["event inventory", "inventory validation", "validate inventory", "inventory validate", "event inventory validation", "inventory report"]
+    - symptom: offer_reservations
+      keywords: ["reservation", "reservations", "backorder", "backorders", "reserved", "offer reservation", "show reservations"]
+    - symptom: feed_qty_update
+      keywords: ["feed qty", "feed quantity", "qty updated", "feed updated", "feed not updated", "quantity not reflected", "check feed", "feed validation", "feed batch", "submitted feed"]
+  default_symptom: general_query
+  description_marker: ""
+
+# ── Closure templates ─────────────────────────────────────────────
+closure_templates:
+  verdict_field: verdict
+  template_map:
+    FITS_QUERY: closure_answer.j2
+    INSUFFICIENT_DATA: closure_insufficient_data.j2
+    ESCALATE: closure_escalate.j2
+  default_template: closure_escalate.j2
+  fallback_verdict: ESCALATE
+  verdict_inference:
+    - verdict: FITS_QUERY
+      runbook_keywords: ["ANSWERED", "FITS_QUERY", "DATA_FOUND"]
+    - verdict: INSUFFICIENT_DATA
+      runbook_keywords: ["DATA_NOT_FOUND", "INSUFFICIENT_DATA"]
+    - verdict: ESCALATE
+      runbook_keywords: ["ESCALATE", "MISSING_PARAMS", "API_ERROR", "AUTH_ERROR"]
+
+# ── Runtime entry points ──────────────────────────────────────────
+runtime:
+  state_schema: "packs.wakanda_sop_agent.state:IncidentState"
+  state_factory: "packs.wakanda_sop_agent.state:empty_incident_state"
+
+pipelines:
+  incident:
+    type: selector
+    max_turns: 30
+    termination_agent: ClosureAgent
+    selector_prompt: >
+      You are the orchestrator for a Wakanda Inventory SOP Agent pipeline.
+      Select the NEXT agent strictly based on the pipeline stage. Each agent speaks ONCE.
+
+      PIPELINE ORDER (strictly sequential — never go backward):
+        1. TriageAgent → extracts offer_id, node_id, query_intent, and date params from the query. Goes FIRST and only once.
+        2. DiagnosticAgent → selects and executes the appropriate SOP tool chain based on query_intent. Goes SECOND and only once.
+        3. DecisionAgent → maps diagnostic outcomes to a verdict (FITS_QUERY / INSUFFICIENT_DATA / ESCALATE). Goes THIRD and only once.
+        4. ActionAgent → compiles the structured answer for the Closure Agent. Goes FOURTH and only once.
+        5. ClosureAgent → renders the final formatted response. Goes FIFTH (LAST) and terminates the pipeline.
+
+      RULES:
+        - NEVER select an agent that has already produced output — each agent gets exactly ONE turn.
+        - If DiagnosticAgent reported tool failures, still move forward to DecisionAgent.
+        - DecisionAgent must handle partial results gracefully.
+        - After ClosureAgent speaks, the pipeline MUST end.
+    agents:
+      - name: TriageAgent
+        role: Extracts offer_id, node_id, order_id, event_id, query_intent, and date parameters from the free-text query
+        prompt_file: triage.j2
+        tools: []
+
+      - name: DiagnosticAgent
+        role: Selects and executes the SOP tool chain matching the detected query intent
+        prompt_file: diagnostic.j2
+        tools:
+          - DIAG-GLI-01
+          - DIAG-NODE-01
+          - DIAG-RES-01
+          - DIAG-EI-01
+          - DIAG-PATH-01
+          - DIAG-LOCK-01
+          - DIAG-BULK-01
+          - DIAG-EVENT-01
+          - DIAG-ORDER-01
+          - DIAG-CAP-01
+          - DIAG-TRANS-01
+          - DIAG-TRANS-NAT-01
+          - DIAG-OFFRES-01
+          - DIAG-HIST-01
+          - DIAG-NODEHIST-01
+          - DIAG-FEED-01
+          - DIAG-PREORDER-01
+
+      - name: DecisionAgent
+        role: Maps diagnostic observations to the correct verdict and runbook card
+        prompt_file: decision.j2
+        tools:
+          - DIAG-DECISION-MATRIX
+
+      - name: ActionAgent
+        role: Compiles findings into a structured answer block for the Closure Agent
+        prompt_file: action.j2
+        tools: []
+
+      - name: ClosureAgent
+        role: Renders the final formatted answer and closes the pipeline
+        prompt_file: closure.j2
+        tools: []
+
+  retrieval:
+    type: round_robin
+    max_turns: 10
+    termination_agent: RetrievalAgent
+    agents:
+      - name: RetrievalAgent
+        role: >
+          Answers Wakanda inventory health queries interactively. Extracts
+          parameters directly from the user's question, selects and executes
+          the appropriate diagnostic tools, and returns a clear, structured answer.
+        prompt_file: retrieval.j2
+        tools:
+          - DIAG-GLI-01
+          - DIAG-NODE-01
+          - DIAG-RES-01
+          - DIAG-EI-01
+          - DIAG-PATH-01
+          - DIAG-LOCK-01
+          - DIAG-BULK-01
+          - DIAG-EVENT-01
+          - DIAG-ORDER-01
+          - DIAG-CAP-01
+          - DIAG-TRANS-01
+          - DIAG-TRANS-NAT-01
+          - DIAG-OFFRES-01
+          - DIAG-HIST-01
+          - DIAG-NODEHIST-01
+          - DIAG-FEED-01
+          - DIAG-PREORDER-01

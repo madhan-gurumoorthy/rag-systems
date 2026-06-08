@@ -1,0 +1,107 @@
+.ld-wcp-ratingdisplay-wrapper {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ld-wcp-ratingdisplay-starsInverse {
+  filter: brightness(0) invert(1);
+}
+.ld-wcp-ratingdisplay-content {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ld-wcp-ratingdisplay-wrapperSmall .ld-wcp-ratingdisplay-content {
+  gap: 4px;
+}
+.ld-wcp-ratingdisplay-wrapperMedium .ld-wcp-ratingdisplay-content {
+  gap: 8px;
+}
+.ld-wcp-ratingdisplay-leftGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ld-wcp-ratingdisplay-count {
+  color: var(--ld-semantic-color-text-subtle, #515357);
+  text-align: center;
+  font-kerning: none;
+  font-feature-settings: 'liga' off;
+  font-weight: 400;
+}
+.ld-wcp-ratingdisplay-wrapperSmall .ld-wcp-ratingdisplay-count {
+  font-size: 12px;
+  line-height: 1.333;
+}
+.ld-wcp-ratingdisplay-wrapperMedium .ld-wcp-ratingdisplay-count {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.ld-wcp-ratingdisplay-wrapperInverse .ld-wcp-ratingdisplay-count {
+  color: var(--ld-semantic-color-text-inverse, #ffffff);
+}
+.ld-wcp-ratingdisplay-link {
+  color: var(--ld-semantic-color-link-text, #2e2f32);
+  font-kerning: none;
+  font-feature-settings: 'liga' off;
+  font-weight: 400;
+  text-decoration: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: auto;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.ld-wcp-ratingdisplay-link:hover {
+  text-decoration: none;
+}
+.ld-wcp-ratingdisplay-wrapperSmall .ld-wcp-ratingdisplay-link {
+  font-size: 12px;
+  line-height: 1.333;
+}
+.ld-wcp-ratingdisplay-wrapperMedium .ld-wcp-ratingdisplay-link {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.ld-wcp-ratingdisplay-wrapperInverse .ld-wcp-ratingdisplay-link {
+  color: var(--ld-semantic-color-link-text-accent-white, #ffffff);
+}
+.ld-wcp-ratingdisplay-pipe {
+  color: var(--ld-semantic-color-text-subtlest, #74767c);
+  font-kerning: none;
+  font-feature-settings: 'liga' off;
+  font-weight: 400;
+  user-select: none;
+}
+.ld-wcp-ratingdisplay-wrapperSmall .ld-wcp-ratingdisplay-pipe {
+  font-size: 12px;
+  line-height: 1.333;
+}
+.ld-wcp-ratingdisplay-wrapperMedium .ld-wcp-ratingdisplay-pipe {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.ld-wcp-ratingdisplay-wrapperInverse .ld-wcp-ratingdisplay-pipe {
+  color: var(--ld-semantic-color-text-inverse, #ffffff);
+}
+.ld-wcp-ratingdisplay-text {
+  color: var(--ld-semantic-color-text-subtle, #515357);
+  text-align: center;
+  font-kerning: none;
+  font-feature-settings: 'liga' off;
+  font-weight: 400;
+}
+.ld-wcp-ratingdisplay-wrapperSmall .ld-wcp-ratingdisplay-text {
+  font-size: 12px;
+  line-height: 1.333;
+}
+.ld-wcp-ratingdisplay-wrapperMedium .ld-wcp-ratingdisplay-text {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.ld-wcp-ratingdisplay-wrapperInverse .ld-wcp-ratingdisplay-text {
+  color: var(--ld-semantic-color-text-inverse, #ffffff);
+}

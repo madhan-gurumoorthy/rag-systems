@@ -1,0 +1,263 @@
+/* LD Portable – WCPAutoCareModals */
+
+/* Confirmation screen (shared by CheckIn + Reschedule) */
+.ld-wcp-auto-care-modals-confirm-wrap {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.ld-wcp-auto-care-modals-confirm-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ld-semantic-color-fill-positive, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ld-wcp-auto-care-modals-confirm-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ld-semantic-color-text);
+  margin: 0;
+}
+
+.ld-wcp-auto-care-modals-confirm-desc {
+  font-size: 14px;
+  color: var(--ld-semantic-color-text-subtle);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Modal header bar */
+.ld-wcp-auto-care-modals-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ld-semantic-color-separator);
+}
+
+.ld-wcp-auto-care-modals-header-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ld-semantic-color-text);
+  margin: 0;
+}
+
+.ld-wcp-auto-care-modals-close-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  color: var(--ld-semantic-color-text-subtle);
+}
+
+/* Modal body */
+.ld-wcp-auto-care-modals-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Detail card (background box) */
+.ld-wcp-auto-care-modals-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--ld-semantic-color-background-subtle, #f8f8f8);
+}
+
+/* Notes box */
+.ld-wcp-auto-care-modals-notes-box {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--ld-semantic-color-separator);
+  font-size: 13px;
+}
+
+.ld-wcp-auto-care-modals-notes-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ld-semantic-color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ld-wcp-auto-care-modals-notes-text {
+  margin: 4px 0 0;
+  color: var(--ld-semantic-color-text);
+}
+
+/* Modal footer */
+.ld-wcp-auto-care-modals-footer {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--ld-semantic-color-separator);
+  justify-content: flex-end;
+}
+
+/* Reschedule: service summary */
+.ld-wcp-auto-care-modals-service-summary {
+  font-size: 13px;
+  color: var(--ld-semantic-color-text-subtle);
+}
+
+.ld-wcp-auto-care-modals-service-summary-vehicle {
+  color: var(--ld-semantic-color-text);
+}
+
+.ld-wcp-auto-care-modals-location-row {
+  font-size: 13px;
+  color: var(--ld-semantic-color-text-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ld-wcp-auto-care-modals-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ld-semantic-color-text);
+  margin: 0 0 12px;
+}
+
+.ld-wcp-auto-care-modals-section-label-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ld-semantic-color-text);
+  margin: 0 0 8px;
+}
+
+.ld-wcp-auto-care-modals-time-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* View Details: auto care header */
+.ld-wcp-auto-care-modals-view-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ld-wcp-auto-care-modals-view-icon {
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.ld-wcp-auto-care-modals-view-overline {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ld-semantic-color-text-subtle);
+  margin: 0;
+}
+
+.ld-wcp-auto-care-modals-view-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ld-semantic-color-text);
+  margin: 2px 0 0;
+}
+
+/* Detail Row */
+.ld-wcp-auto-care-modals-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.ld-wcp-auto-care-modals-detail-row-label {
+  font-size: 12px;
+  color: var(--ld-semantic-color-text-subtle);
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.ld-wcp-auto-care-modals-detail-row-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ld-semantic-color-text);
+  text-align: right;
+}
+
+/* Mini Calendar */
+.ld-wcp-auto-care-modals-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ld-wcp-auto-care-modals-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ld-wcp-auto-care-modals-calendar-nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  color: var(--ld-semantic-color-text-subtle);
+}
+
+.ld-wcp-auto-care-modals-calendar-month {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ld-semantic-color-text);
+}
+
+.ld-wcp-auto-care-modals-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.ld-wcp-auto-care-modals-calendar-weekday {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ld-semantic-color-text-subtle);
+  padding: 4px 0;
+}
+
+.ld-wcp-auto-care-modals-calendar-day {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  font-size: 13px;
+  justify-self: center;
+  background: transparent;
+  color: var(--ld-semantic-color-text);
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.ld-wcp-auto-care-modals-calendar-day-selected {
+  background: var(--ld-semantic-color-fill-brand-bold, #0071dc);
+  color: #fff;
+  font-weight: 700;
+}
+
+.ld-wcp-auto-care-modals-calendar-day-past {
+  color: var(--ld-semantic-color-text-disabled, #c0c0c0);
+  cursor: default;
+}

@@ -1,0 +1,121 @@
+LIMO ONLINE ELIGIBILITY — {{ "PENDING INTENT" if verdict == "PENDING_INTENT" else "BLOCKED" }}
+═══════════════════════════════════════════
+
+Verdict: {{ verdict | default("BLOCKED") }}
+Offer ID:  {{ offer_id | default(external_ref) }}
+Node ID:   {{ node_id | default("—") }}
+Intent:    {{ intent | default("—") | upper }}
+Sub-SOP:   {{ sub_intent | default("main") | upper }}
+Block Reason: {{ verdict_reason | default("Pipeline could not complete validation.") }}
+{% if runbook_id %}
+Runbook: {{ runbook_id }}
+{% endif %}
+
+─── What we could fetch ───
+{% if offer_id %}  - Offer ID:                      {{ offer_id }}
+{% endif %}
+{% if seller_id %}  - Seller ID:                     {{ seller_id }}
+{% endif %}
+{% if seller_type %}  - Seller Type:                   {{ seller_type }}
+{% endif %}
+{% if offer_created is not none %}  - Offer Created (oa.ofrCrt):     {{ offer_created }}
+{% endif %}
+{% if offer_type %}  - Offer Type:                    {{ offer_type }}
+{% endif %}
+{% if product_id %}  - Product ID:                    {{ product_id }}
+{% endif %}
+{% if wfs_eligible %}  - WFS Eligible (oa.wfsElig):     {{ wfs_eligible }}
+{% endif %}
+{% if ftc_csv or ftc %}  - FTC:                           {{ ftc_csv | default(ftc) }}
+{% endif %}
+{% if item_class_id %}  - Item Class ID:                 {{ item_class_id }}
+{% endif %}
+{% if product_type %}  - Product Type:                  {{ product_type }}
+{% endif %}
+{% if acc_d_nbr %}  - Acct Dept Number:              {{ acc_d_nbr }}
+{% endif %}
+
+{% if block_code == "INTENT_REQUIRED" or verdict == "PENDING_INTENT" %}
+─── Awaiting Human Input — Main Intent ───
+  The pipeline could not infer the main MP / FC / WFS intent from the
+  request.  A Slack approval menu has been posted to {{ approval_channel | default("the configured Slack channel") }};
+  the user must pick one of:
+
+    • **FC**  — Walmart 1P fulfillment via the selected node
+    • **WFS** — Walmart Fulfillment Services (wfsElig must be true)
+    • **MP**  — Marketplace seller-fulfilled
+
+  Once the user clicks, the pipeline resumes automatically and the
+  closure will be re-rendered with the chosen intent.
+{% elif block_code == "ODIN_NOT_FOUND" %}
+─── ODIN Lookup Failed ───
+  The offer_id {{ offer_id | default("—") }} could not be found in ODIN.
+  Confirm the offer_id is correct and that the upstream catalog has
+  propagated.
+{% elif block_code == "OFFER_NOT_CREATED" %}
+─── Offer Not Created ───
+{% if case1_block_reason %}  {{ case1_block_reason }}
+{% else %}  ODIN returned the offer but `oa.ofrCrt` is not true.  The offer has not
+  finished publishing — re-run validation once the publisher confirms
+  creation.
+{% endif %}
+{% elif block_code == "OTYPE_INVALID" %}
+─── Offer Type Invalid ───
+{% if case1_block_reason %}  {{ case1_block_reason }}
+{% else %}  oa.otyp = `{{ offer_type | default("—") }}` is not a supported online
+  offer type.  Verify the offer was published as an online offer.
+{% endif %}
+{% elif block_code == "WFS_NOT_ELIGIBLE" %}
+─── WFS Not Eligible ───
+{% if case1_block_reason %}  {{ case1_block_reason }}
+{% else %}  Caller selected WFS but `oa.wfsElig` = `{{ wfs_eligible | default("—") }}`.
+  Confirm the seller / offer is WFS-enrolled or pick MP / FC instead.
+{% endif %}
+{% elif block_code == "AURUM_NODE_MISSING" %}
+─── AURUM Node Missing ───
+  Node `{{ node_id | default("—") }}` is not present in AURUM
+  `offerDistributorAttr.nodes` for offer
+  `{{ offer_id | default("—") }}`.  Escalate to LIMO Ops.
+{% elif block_code == "AURUM_NODE_INACTIVE" %}
+─── AURUM Node Inactive ───
+  Node `{{ node_id | default("—") }}` exists in AURUM but is not
+  ACTIVE (sts=`{{ aurum_node_status | default("—") }}`,
+  dccSts=`{{ aurum_dcc_status | default("—") }}`).  Eligibility cannot
+  be derived until the node returns to ACTIVE with dccSts=true.
+{% elif block_code == "COST_RT_NO_SI" %}
+─── COST RT — IQS itemNumber Missing ───
+  COST RT diagnostic requires the IQS itemNumber for product
+  `{{ product_id | default("—") }}` but IQS SI returned no
+  itemNumber.  Escalate to LIMO Ops.
+{% elif block_code == "COST_RT_STORES_ONLY" %}
+─── COST RT — STORE-only Partnership ───
+  Shipnodes returned partnershipTypeCode =
+  `{{ iqs_partnership_type_code | default("—") }}` for shipnode
+  `{{ node_id | default("—") }}` × item
+  `{{ iqs_item_number | default("—") }}`.  COST RT is not applicable
+  for STORE-only ship nodes.
+{% elif block_code == "PREORDER_SELLER_EXTERNAL" %}
+─── Pre-Order — EXTERNAL Seller Blocked ───
+  Pre-Order is not supported for EXTERNAL sellers.  Observed
+  seller_type = `{{ seller_type | default("—") }}`.
+{% elif block_code == "REPLEN_SELLER_EXTERNAL" %}
+─── Replenishable — EXTERNAL Seller Blocked ───
+  Replenishable is not supported for EXTERNAL sellers.  Observed
+  seller_type = `{{ seller_type | default("—") }}`.
+{% elif block_code == "ACS_SELLER_NOT_ENROLLED" %}
+─── ACS — Seller Not Enrolled ───
+  DEW Seller reports aseSeller = `{{ ase_seller | default("—") }}`
+  for seller `{{ seller_id | default("—") }}`.  The seller is not
+  enrolled in Automated Shipping Enabled.
+{% elif block_code == "UPSTREAM_ERROR" %}
+─── Upstream API Error ───
+  An upstream call failed during diagnostic execution.  Detail:
+  {{ verdict_reason | default("see event log for tool error") }}.
+{% else %}
+─── Pipeline Halted ───
+  Diagnostic pipeline halted before final eligibility could be computed.
+  See `verdict_reason` above and the event log for the failing step.
+{% endif %}
+
+Status: {{ "PENDING_INTENT" if verdict == "PENDING_INTENT" else "INVESTIGATION_REQUIRED" }}
+═══════════════════════════════════════════

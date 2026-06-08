@@ -1,0 +1,82 @@
+/* LD Portable – Switch */
+/* Switch */
+.ld-switch-pill {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+  align-items: center;
+  background: none;
+  border: 0;
+  color: var(--ld-semantic-color-text, #2e2f32);
+  cursor: pointer;
+  display: inline-flex;
+  margin: 0;
+  padding: 0;
+}
+.ld-switch-pill:disabled {
+  cursor: default;
+}
+
+.ld-switch-indicator {
+  background: var(--ld-semantic-color-switch-fill, #74767c);
+  border-radius: 62.5rem;
+  display: inline-block;
+  height: 1.5rem;
+  position: relative;
+  transition: backgroundColor 0.1s;
+  width: 3rem;
+}
+.ld-switch-indicator::before {
+  background: var(--ld-semantic-color-switch-indicator, #ffffff);
+  border-radius: 62.5rem;
+  content: "";
+  display: inline-block;
+  height: 1.25rem;
+  left: 0.125rem;
+  position: absolute;
+  top: 0.125rem;
+  transition: backgroundColor 0.1s, transform 0.1s cubic-bezier(0.77, 0, 0.175, 1);
+  width: 1.25rem;
+}
+.ld-switch-indicator.ld-switch-on {
+  background: var(--ld-semantic-color-switch-fill-activated, #0053e2);
+}
+.ld-switch-indicator.ld-switch-on::before {
+  box-shadow: 0 0.0625rem 0.125rem 0.0625rem rgba(0, 0, 0, 0.1490196078), 0 -0.0625rem 0.125rem 0 rgba(0, 0, 0, 0.1019607843);
+  transform: translateX(1.5rem);
+}
+.ld-switch-pill:hover .ld-switch-indicator, .ld-switch-pill.hover .ld-switch-indicator {
+  background: var(--ld-semantic-color-switch-fill-hovered, #686a70);
+}
+.ld-switch-pill:hover .ld-switch-indicator.ld-switch-on, .ld-switch-pill.hover .ld-switch-indicator.ld-switch-on {
+  background: var(--ld-semantic-color-switch-fill-activated-hovered, #114ab6);
+}
+.ld-switch-pill:focus .ld-switch-indicator, .ld-switch-pill.focus .ld-switch-indicator {
+  background: var(--ld-semantic-color-switch-fill-hovered, #686a70);
+}
+.ld-switch-pill:focus .ld-switch-indicator.ld-switch-on, .ld-switch-pill.focus .ld-switch-indicator.ld-switch-on {
+  background: var(--ld-semantic-color-switch-fill-activated-hovered, #114ab6);
+}
+.ld-switch-pill:active .ld-switch-indicator, .ld-switch-pill.active .ld-switch-indicator {
+  background: var(--ld-semantic-color-switch-fill-pressed, #515357);
+}
+.ld-switch-pill:active .ld-switch-indicator.ld-switch-on, .ld-switch-pill.active .ld-switch-indicator.ld-switch-on {
+  background: var(--ld-semantic-color-switch-fill-activated-pressed, #002e99);
+}
+.ld-switch-pill:disabled .ld-switch-indicator {
+  background: var(--ld-semantic-color-switch-fill-disabled, #e3e4e5) !important;
+}
+.ld-switch-pill:disabled .ld-switch-indicator.ld-switch-on {
+  background: var(--ld-semantic-color-switch-fill-activated-disabled, #e3e4e5) !important;
+}
+.ld-switch-pill:disabled .ld-switch-indicator::before {
+  background: var(--ld-semantic-color-switch-indicator-disabled, #babbbe) !important;
+  box-shadow: none;
+}
+
+.ld-switch-label {
+  display: inline-block;
+  flex: 1;
+  margin-left: 0.75rem;
+  text-align: left;
+}

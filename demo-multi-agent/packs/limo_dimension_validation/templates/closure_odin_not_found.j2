@@ -1,0 +1,40 @@
+LIMO DIMENSION VALIDATION — CLOSURE SUMMARY
+═══════════════════════════════════════════
+
+Verdict: ODIN OFFER NOT FOUND
+{% set oid = offer_id | default(external_ref) | default("") %}
+Offer ID:        {{ oid if oid else "—" }}
+
+{% if oid and oid | length == 32 %}
+The Offer ID is a valid 32-character identifier, but ODIN returned
+no record for this ID.  This may indicate:
+  - The offer has not been ingested into ODIN yet
+  - The offer was removed or deactivated
+  - A system-level issue in ODIN
+
+No further validation was performed — IQS TI and Eligibility
+Consolidated API were not called because the offer could not be
+retrieved from ODIN.
+
+Action: Escalating to LIMO Ops team for investigation — the Offer ID
+appears valid but it is not found in ODIN.
+{% elif oid %}
+The Offer ID provided is {{ oid | length }} characters long.  A valid
+ODIN Offer ID must be exactly 32 uppercase hexadecimal characters
+(A-F, 0-9).
+
+Please verify the Offer ID and retry.  Example of a valid Offer ID:
+  E981AC30C2C635B999DEEEF8DF07196D
+
+No validation was performed.
+{% else %}
+No Offer ID was provided or could be extracted from the request.
+
+Please provide a valid 32-character ODIN Offer ID and retry.
+Example: "Validate dimensions for offer E981AC30C2C635B999DEEEF8DF07196D"
+
+No validation was performed.
+{% endif %}
+
+Status: BLOCKED
+═══════════════════════════════════════════

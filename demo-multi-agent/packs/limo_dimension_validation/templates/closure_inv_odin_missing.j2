@@ -1,0 +1,41 @@
+LIMO DIMENSION VALIDATION — CLOSURE SUMMARY
+═══════════════════════════════════════════
+
+Verdict: INVESTIGATION REQUIRED — ODIN dimensions missing
+Offer ID:        {{ offer_id | default(external_ref) }}
+Seller ID:       {{ seller_id | default("—", true) }}
+Primary GTIN:    {{ primary_gtin | default("—", true) }}
+
+ODIN Dimensions: NOT AVAILABLE
+
+IQS TI — GOLD Record:
+{% if iqs_gold_height or iqs_gold_length or iqs_gold_width or iqs_gold_weight %}
+  - Height: {{ iqs_gold_height | default("—", true) }} IN
+  - Length: {{ iqs_gold_length | default("—", true) }} IN
+  - Width:  {{ iqs_gold_width  | default("—", true) }} IN
+  - Weight: {{ iqs_gold_weight | default("—", true) }} LB
+{% if iqs_gold_timestamp %}  - Last Updated: {{ iqs_gold_timestamp }}{% endif %}
+{% if iqs_gold_capture_method %}  - Capture Method: {{ iqs_gold_capture_method }}{% endif %}
+{% else %}
+  NOT AVAILABLE
+{% endif %}
+
+{% if iqs_supplier_height or iqs_supplier_length or iqs_supplier_width or iqs_supplier_weight %}
+IQS TI — Supplier Record:
+  - Height: {{ iqs_supplier_height | default("—", true) }} IN
+  - Length: {{ iqs_supplier_length | default("—", true) }} IN
+  - Width:  {{ iqs_supplier_width  | default("—", true) }} IN
+  - Weight: {{ iqs_supplier_weight | default("—", true) }} LB
+{% if iqs_supplier_timestamp %}  - Last Updated: {{ iqs_supplier_timestamp }}{% endif %}
+{% endif %}
+
+ODIN dimensions are missing, but IQS TI dimensions are available.
+This indicates IQS TI has dimension data, but ODIN is not reflecting it.
+
+Eligibility Consolidated API validation was NOT performed.
+
+Action: Please check with the LIMO Ops team to investigate why
+ODIN is missing dimensions while IQS TI has the dimension data.
+
+Status: INVESTIGATION_REQUIRED
+═══════════════════════════════════════════

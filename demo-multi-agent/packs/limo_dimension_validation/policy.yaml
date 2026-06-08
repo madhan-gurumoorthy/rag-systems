@@ -1,0 +1,30 @@
+# Policy Configuration — LIMO Dimension Validation
+#
+# Read-only validation pack: no approval-gated tools, no write actions,
+# no destructive operations.
+
+approvals:
+  required_for_cards: []
+  required_for_tools: []
+  approval_channel: ""
+  concord_entry_point: ""
+  timeout_minutes: 15
+  ad_group: ""
+
+blast_radius:
+  max_batch_size: 1
+  limits: {}
+
+permitted_actions:
+  - "Read-only ODIN offer lookup"
+  - "Read-only IQS TI lookup"
+  - "Read-only Eligibility Consolidated API lookup"
+  - "Dimension comparison and reporting"
+
+denied_actions:
+  - "Modifying offer data"
+  - "Modifying trade-item data"
+  - "Updating downstream APIs"
+
+feature_flags:
+  enable_consolidated_call: true

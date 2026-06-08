@@ -1,0 +1,44 @@
+/* LD Portable – SectionHeader */
+
+.ld-section-header-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ld-semantic-spacing-50, 0.25rem);
+}
+
+.ld-section-header-top-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ld-semantic-spacing-200, 1rem);
+}
+
+.ld-section-header-title {
+  font-size: var(--ld-semantic-font-heading-medium-size-b-s, 1.25rem);
+  font-weight: var(--ld-semantic-font-heading-medium-weight-default, 700);
+  line-height: var(--ld-semantic-font-heading-medium-line-height-b-s, 1.75rem);
+  color: var(--ld-semantic-color-text, #2e2f32);
+  margin: 0;
+}
+
+.ld-section-header-action {
+  font-size: var(--ld-semantic-font-body-small-size, 0.875rem);
+  font-weight: var(--ld-semantic-font-body-small-weight-default, 400);
+  line-height: var(--ld-semantic-font-body-small-line-height, 1.25rem);
+  color: var(--ld-semantic-color-action-text-primary, #0071dc);
+  text-decoration: underline;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ld-section-header-action:hover {
+  color: var(--ld-semantic-color-action-text-primary-hover, #004f9a);
+}
+
+.ld-section-header-subtitle {
+  font-size: var(--ld-semantic-font-body-small-size, 0.875rem);
+  font-weight: var(--ld-semantic-font-body-small-weight-default, 400);
+  line-height: var(--ld-semantic-font-body-small-line-height, 1.25rem);
+  color: var(--ld-semantic-color-text-subtle, #515357);
+  margin: 0;
+}

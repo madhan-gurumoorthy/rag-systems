@@ -1,0 +1,28 @@
+LIMO DIMENSION VALIDATION — CLOSURE SUMMARY
+═══════════════════════════════════════════
+
+Verdict: PASS (Marketplace Offer — Weight-Only Validation)
+Offer ID:        {{ offer_id | default(external_ref) }}
+Seller ID:       {{ seller_id | default("—", true) }}
+Seller Type:     {{ seller_type | default("—", true) }}
+WFS Eligible:    {{ wfs_eligible | default("—", true) }}
+
+ODIN Weight:
+  - Weight: {{ odin_weight | default("—", true) }} LB
+
+Consolidated API Weight:
+  - Weight: {{ consolidated_weight | default("—", true) }} LB
+
+{% if mp_weight_reason %}
+Comparison: {{ mp_weight_reason }}
+{% endif %}
+
+Result: This is a Marketplace (MP) offer (WFS Eligible = FALSE,
+Seller Type = EXTERNAL).  For MP offers, only weight is validated
+between ODIN and the Eligibility Consolidated API — IQS TI checks
+are not applicable.
+
+ODIN weight and Consolidated API weight are in sync.
+
+Status: RESOLVED
+═══════════════════════════════════════════

@@ -1,0 +1,378 @@
+[
+  {
+    "id": "eval-online-intent-required",
+    "description": "Main intent missing → HITL Slack gate fires (PENDING_INTENT verdict, RBK-ONLINE-INTENT-REQUIRED).",
+    "input": {
+      "external_ref": "AAAA0000000000000000000000000001",
+      "work_item_text": "Validate online eligibility for offer AAAA0000000000000000000000000001 at node 6094.",
+      "offer_id": "AAAA0000000000000000000000000001",
+      "node_id": "6094"
+    },
+    "expected": {
+      "verdict": "PENDING_INTENT",
+      "runbook": "RBK-ONLINE-INTENT-REQUIRED",
+      "intent": null,
+      "sub_intent": "main"
+    }
+  },
+  {
+    "id": "eval-online-fc-eligible",
+    "description": "FC intent supplied by HITL — AURUM + Consolidated FC both return paths → ELIGIBLE.",
+    "input": {
+      "external_ref": "BBBB0000000000000000000000000002",
+      "work_item_text": "FC eligibility for offer BBBB0000000000000000000000000002 at FC 6045.",
+      "offer_id": "BBBB0000000000000000000000000002",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "ELIGIBLE",
+      "runbook": "RBK-ONLINE-FC-ELIGIBLE",
+      "intent": "FC",
+      "sub_intent": "main"
+    }
+  },
+  {
+    "id": "eval-online-fc-aurum-node-missing",
+    "description": "FC intent but node missing in AURUM offerDistributorAttr.nodes → BLOCKED.",
+    "input": {
+      "external_ref": "CCCC0000000000000000000000000003",
+      "work_item_text": "FC eligibility for offer CCCC0000000000000000000000000003 at node 99999.",
+      "offer_id": "CCCC0000000000000000000000000003",
+      "node_id": "99999",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "NOT_ELIGIBLE",
+      "runbook": "RBK-ONLINE-AURUM-NODE-MISSING",
+      "intent": "FC",
+      "sub_intent": "main"
+    }
+  },
+  {
+    "id": "eval-online-fc-aurum-node-inactive",
+    "description": "FC intent + node present but sts != ACTIVE / dccSts != true → BLOCKED.",
+    "input": {
+      "external_ref": "DDDD0000000000000000000000000004",
+      "work_item_text": "FC eligibility for offer DDDD0000000000000000000000000004 at node 5012.",
+      "offer_id": "DDDD0000000000000000000000000004",
+      "node_id": "5012",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "NOT_ELIGIBLE",
+      "runbook": "RBK-ONLINE-AURUM-NODE-INACTIVE",
+      "intent": "FC",
+      "sub_intent": "main"
+    }
+  },
+  {
+    "id": "eval-online-fc-partial",
+    "description": "AURUM has paths but Consolidated FC does not → PARTIAL.",
+    "input": {
+      "external_ref": "EEEE0000000000000000000000000005",
+      "work_item_text": "FC eligibility for offer EEEE0000000000000000000000000005 at node 6045.",
+      "offer_id": "EEEE0000000000000000000000000005",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "PARTIAL",
+      "runbook": "RBK-ONLINE-FC-PARTIAL",
+      "intent": "FC",
+      "sub_intent": "main"
+    }
+  },
+  {
+    "id": "eval-online-fc-not-eligible",
+    "description": "AURUM returned no FC paths → NOT_ELIGIBLE.",
+    "input": {
+      "external_ref": "FFFF0000000000000000000000000006",
+      "work_item_text": "FC eligibility for offer FFFF0000000000000000000000000006 at node 6094.",
+      "offer_id": "FFFF0000000000000000000000000006",
+      "node_id": "6094",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "NOT_ELIGIBLE",
+      "runbook": "RBK-ONLINE-FC-NOT-ELIGIBLE",
+      "intent": "FC",
+      "sub_intent": "main"
+    }
+  },
+  {
+    "id": "eval-online-fc-otyp-invalid",
+    "description": "FC intent + oa.otyp not in {ONLINE_ONLY, ONLINE_AND_STORE} → Case 1 BLOCKED with OTYPE_INVALID block_code.",
+    "input": {
+      "external_ref": "FFFF000000000000000000000000006A",
+      "work_item_text": "FC eligibility for offer FFFF000000000000000000000000006A at node 6094.",
+      "offer_id": "FFFF000000000000000000000000006A",
+      "node_id": "6094",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "BLOCKED",
+      "runbook": "RBK-ONLINE-OTYPE-INVALID",
+      "intent": "FC",
+      "sub_intent": "main",
+      "block_code": "OTYPE_INVALID"
+    }
+  },
+  {
+    "id": "eval-online-wfs-eligible",
+    "description": "WFS intent + oa.wfsElig == true → ELIGIBLE.",
+    "input": {
+      "external_ref": "11110000000000000000000000000007",
+      "work_item_text": "Confirm WFS eligibility for offer 11110000000000000000000000000007.",
+      "offer_id": "11110000000000000000000000000007",
+      "node_id": "9275",
+      "intent": "WFS"
+    },
+    "expected": {
+      "verdict": "ELIGIBLE",
+      "runbook": "RBK-ONLINE-WFS-ELIGIBLE",
+      "intent": "WFS",
+      "sub_intent": "main"
+    }
+  },
+  {
+    "id": "eval-online-wfs-not-eligible",
+    "description": "WFS intent + oa.wfsElig != true → Case 1 BLOCKED with WFS_NOT_ELIGIBLE block_code; closure renders the intent-aware redirect line pointing the caller at MP/FC.",
+    "input": {
+      "external_ref": "22220000000000000000000000000008",
+      "work_item_text": "Confirm WFS eligibility for offer 22220000000000000000000000000008.",
+      "offer_id": "22220000000000000000000000000008",
+      "node_id": "9275",
+      "intent": "WFS"
+    },
+    "expected": {
+      "verdict": "BLOCKED",
+      "runbook": "RBK-ONLINE-WFS-NOT-ELIGIBLE",
+      "intent": "WFS",
+      "sub_intent": "main",
+      "block_code": "WFS_NOT_ELIGIBLE"
+    }
+  },
+  {
+    "id": "eval-online-mp-eligible",
+    "description": "MP intent traverses the same AURUM + Consolidated cascade as FC; both return paths → ELIGIBLE.",
+    "input": {
+      "external_ref": "33330000000000000000000000000009",
+      "work_item_text": "MP eligibility for offer 33330000000000000000000000000009.",
+      "offer_id": "33330000000000000000000000000009",
+      "node_id": "9275",
+      "intent": "MP"
+    },
+    "expected": {
+      "verdict": "ELIGIBLE",
+      "runbook": "RBK-ONLINE-MP-ELIGIBLE",
+      "intent": "MP",
+      "sub_intent": "main"
+    }
+  },
+  {
+    "id": "eval-online-mp-wfs-elig-notice",
+    "description": "MP intent + oa.wfsElig == true → Case 1 PROCEEDS with MP_WFS_ELIGIBLE_NOTICE; pipeline continues through AURUM/DEW/Promise/Consolidated and the final verdict is driven by the AURUM cascade (no AURUM paths → NOT_ELIGIBLE).",
+    "input": {
+      "external_ref": "44440000000000000000000000000010",
+      "work_item_text": "MP eligibility for offer 44440000000000000000000000000010.",
+      "offer_id": "44440000000000000000000000000010",
+      "node_id": "9275",
+      "intent": "MP"
+    },
+    "expected": {
+      "verdict": "NOT_ELIGIBLE",
+      "runbook": "RBK-ONLINE-MP-NOT-ELIGIBLE",
+      "intent": "MP",
+      "sub_intent": "main",
+      "case1_notice_code": "MP_WFS_ELIGIBLE_NOTICE"
+    }
+  },
+  {
+    "id": "eval-online-cost-rt-no-si",
+    "description": "COST RT sub-SOP — IQS SI returns no itemNumber for the product → BLOCKED.",
+    "input": {
+      "external_ref": "55550000000000000000000000000011",
+      "work_item_text": "Check FMS cost rt for shipnode itemid — offer 55550000000000000000000000000011 at node 6045.",
+      "offer_id": "55550000000000000000000000000011",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "BLOCKED",
+      "runbook": "RBK-ONLINE-COST-RT-NO-SI",
+      "intent": "FC",
+      "sub_intent": "cost_rt"
+    }
+  },
+  {
+    "id": "eval-online-cost-rt-stores-only",
+    "description": "COST RT — partnershipTypeCode == STORE → BLOCKED.",
+    "input": {
+      "external_ref": "66660000000000000000000000000012",
+      "work_item_text": "FMS cost rt validation for offer 66660000000000000000000000000012 shipnode 6045.",
+      "offer_id": "66660000000000000000000000000012",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "BLOCKED",
+      "runbook": "RBK-ONLINE-COST-RT-STORES-ONLY",
+      "intent": "FC",
+      "sub_intent": "cost_rt"
+    }
+  },
+  {
+    "id": "eval-online-preorder-seller-external",
+    "description": "Pre-Order sub-SOP — seller_type == EXTERNAL → BLOCKED.",
+    "input": {
+      "external_ref": "77770000000000000000000000000013",
+      "work_item_text": "Pre-order check for offer 77770000000000000000000000000013 at FC 9275.",
+      "offer_id": "77770000000000000000000000000013",
+      "node_id": "9275",
+      "intent": "MP"
+    },
+    "expected": {
+      "verdict": "BLOCKED",
+      "runbook": "RBK-ONLINE-PREORDER-SELLER-EXTERNAL",
+      "intent": "MP",
+      "sub_intent": "pre_order"
+    }
+  },
+  {
+    "id": "eval-online-replen-seller-external",
+    "description": "Replenishable sub-SOP — seller_type == EXTERNAL → BLOCKED.",
+    "input": {
+      "external_ref": "88880000000000000000000000000014",
+      "work_item_text": "Replenishable check for offer 88880000000000000000000000000014 at FC 9275.",
+      "offer_id": "88880000000000000000000000000014",
+      "node_id": "9275",
+      "intent": "MP"
+    },
+    "expected": {
+      "verdict": "BLOCKED",
+      "runbook": "RBK-ONLINE-REPLEN-SELLER-EXTERNAL",
+      "intent": "MP",
+      "sub_intent": "replenishable"
+    }
+  },
+  {
+    "id": "eval-online-shipsize-derived",
+    "description": "Shipsize sub-SOP — dimensions supplied → SHIPSIZE_DERIVED, main verdict ELIGIBLE.",
+    "input": {
+      "external_ref": "99990000000000000000000000000015",
+      "work_item_text": "Shipsize derivation for offer 99990000000000000000000000000015 at FC 6045.",
+      "offer_id": "99990000000000000000000000000015",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "ELIGIBLE",
+      "runbook": "RBK-ONLINE-FC-ELIGIBLE",
+      "intent": "FC",
+      "sub_intent": "shipsize"
+    }
+  },
+  {
+    "id": "eval-online-sortable",
+    "description": "Sortable sub-SOP — consolidated sortable flag surfaced, main verdict ELIGIBLE.",
+    "input": {
+      "external_ref": "AAAA0000000000000000000000000016",
+      "work_item_text": "Sortable check for offer AAAA0000000000000000000000000016 at FC 6045.",
+      "offer_id": "AAAA0000000000000000000000000016",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "ELIGIBLE",
+      "runbook": "RBK-ONLINE-FC-ELIGIBLE",
+      "intent": "FC",
+      "sub_intent": "sortable"
+    }
+  },
+  {
+    "id": "eval-online-gifting",
+    "description": "Gifting sub-SOP — consolidated gifting eligibility surfaced, main verdict ELIGIBLE.",
+    "input": {
+      "external_ref": "BBBB0000000000000000000000000017",
+      "work_item_text": "Gifting overbox check for offer BBBB0000000000000000000000000017 at FC 6045.",
+      "offer_id": "BBBB0000000000000000000000000017",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "ELIGIBLE",
+      "runbook": "RBK-ONLINE-FC-ELIGIBLE",
+      "intent": "FC",
+      "sub_intent": "gifting"
+    }
+  },
+  {
+    "id": "eval-online-substitution",
+    "description": "Substitution sub-SOP — restrictions flattened, main verdict ELIGIBLE.",
+    "input": {
+      "external_ref": "CCCC0000000000000000000000000018",
+      "work_item_text": "Substitution check for offer CCCC0000000000000000000000000018 at FC 6045.",
+      "offer_id": "CCCC0000000000000000000000000018",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "ELIGIBLE",
+      "runbook": "RBK-ONLINE-FC-ELIGIBLE",
+      "intent": "FC",
+      "sub_intent": "substitution"
+    }
+  },
+  {
+    "id": "eval-online-acs-not-enrolled",
+    "description": "ACS sub-SOP — DEW Seller reports aseSeller != true → BLOCKED.",
+    "input": {
+      "external_ref": "DDDD0000000000000000000000000019",
+      "work_item_text": "Validate ACS flag for offer DDDD0000000000000000000000000019 at node 6094.",
+      "offer_id": "DDDD0000000000000000000000000019",
+      "node_id": "6094",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "BLOCKED",
+      "runbook": "RBK-ONLINE-ACS-SELLER-NOT-ENROLLED",
+      "intent": "FC",
+      "sub_intent": "acs"
+    }
+  },
+  {
+    "id": "eval-online-ftc",
+    "description": "FTC sub-SOP — consolidated FTC surfaced, main verdict ELIGIBLE.",
+    "input": {
+      "external_ref": "EEEE0000000000000000000000000020",
+      "work_item_text": "FTC validation for offer EEEE0000000000000000000000000020 at FC 6045.",
+      "offer_id": "EEEE0000000000000000000000000020",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "ELIGIBLE",
+      "runbook": "RBK-ONLINE-FC-ELIGIBLE",
+      "intent": "FC",
+      "sub_intent": "ftc"
+    }
+  },
+  {
+    "id": "eval-online-odin-not-found",
+    "description": "ODIN returns no offer for the offer_id → BLOCKED.",
+    "input": {
+      "external_ref": "FFFF0000000000000000000000000021",
+      "work_item_text": "FC eligibility for offer FFFF0000000000000000000000000021 at node 6045.",
+      "offer_id": "FFFF0000000000000000000000000021",
+      "node_id": "6045",
+      "intent": "FC"
+    },
+    "expected": {
+      "verdict": "BLOCKED",
+      "runbook": "RBK-ONLINE-ODIN-NOT-FOUND",
+      "intent": "FC",
+      "sub_intent": "main"
+    }
+  }
+]

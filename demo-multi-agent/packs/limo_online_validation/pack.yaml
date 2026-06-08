@@ -1,0 +1,724 @@
+# LIMO Online Eligibility Validation — SOP Pack
+#
+# Validates online eligibility for an (offer, node) pair across three
+# main intents — MP, FC, WFS — and ten sub-SOPs (COST RT, Pre-Order,
+# Replenishable, Shipsize, Ship Class, Sortable, Gifting, Substitution,
+# ACS, FTC).  The MAIN intent is gathered via a Slack HITL menu when
+# the inbound request does not pre-populate state.intent; sub-SOP
+# routing is keyword-driven from the work-item text.
+#
+# Model credentials are configured in agent_factory/infrastructure/secrets.toml
+# under [default.azure_chat] — NOT in this file.
+
+id: limo_online_validation
+name: LIMO Online Eligibility Validation
+version: 0.1.0
+description: >
+  Validates online eligibility for an offer + node pair.  Walks
+  ODIN → (HITL intent gate) → sub-intent dispatch → AURUM FC → DEW FC
+  → Wakanda Promise → Eligibility Consolidated FC, with deterministic
+  sub-SOPs for COST RT, Pre-Order, Replenishable, Shipsize, Ship
+  Class, Sortable, Gifting, Substitution, ACS, and FTC.
+owner_team: LIMO Ops
+tenant_id: walmart-limo-ops
+default: false
+decision_engine: yaml_rules
+
+# Model config — LLM is used by TriageAgent (offer/node extraction)
+# and DiagnosticAgent (tool orchestration).
+model:
+  provider: azure_openai
+  model: gpt-4.1-mini
+  deployment: gpt-4.1-mini
+  api_version: "2024-10-21"
+  endpoint: https://wmtllmgateway.stage.walmart.com/wmtllmgateway
+  max_tokens: 4096
+  temperature: 0.1
+  extra_params: {}
+
+# Pre-triage gate — disabled.  Entry point is "validate offer X node Y",
+# not a SNOW-routed ticket.  TriageAgent extracts the IDs from the
+# inbound text instead.
+pre_triage:
+  enabled: false
+
+rules_engine: {}
+
+rag:
+  domain: limo_online_validation
+  rag_query_prefix: ""
+  prompt_template: ""
+
+# ── Display labels ────────────────────────────────────────────────
+display:
+  tool_names:
+    diag_odin_01: "ODIN Offer Lookup"
+    diag_aurum_fc_01: "AURUM FC Eligibility"
+    diag_dew_fc_01: "DEW FC API"
+    diag_promise_01: "Wakanda Promise"
+    diag_consolidated_fc_01: "Eligibility Consolidated FC"
+    diag_shipnodes_01: "Shipnodes Lookup"
+    diag_iqs_si_01: "IQS SI Lookup"
+    diag_dew_seller_01: "DEW Seller / ACS"
+    diag_dcc_01: "DCC Distributor Check"
+    diag_classify_intent: "Intent Classifier"
+    diag_classify_sub_intent: "Sub-Intent Dispatcher"
+    diag_offer_id_validate_01: "Offer ID Validator"
+    diag_intent_extract_01: "Intent Detector"
+    diag_case1_gate_01: "Case 1 Gate"
+    diag_odin_ofr_crt_01: "ODIN Offer-Created Gate"
+    diag_seller_enforcement_fetch_01: "Seller Enforcement Lookup"
+    diag_seller_enforcement_classify_01: "Seller Enforcement Classifier"
+    diag_dew_restriction_fetch_01: "DEW Restriction Lookup"
+    diag_dew_restriction_group_01: "DEW Restriction Grouper"
+    diag_analyze_aurum_fc: "AURUM FC Analyzer"
+    diag_analyze_dew_fc: "DEW FC Analyzer"
+    diag_analyze_promise: "Promise Analyzer"
+    diag_analyze_consolidated_fc: "Consolidated FC Analyzer"
+    diag_analyze_substitution: "Substitution Analyzer"
+    diag_derive_shipsize: "Shipsize Derivation"
+    diag_decision_matrix: "Decision Matrix"
+  outcome_labels:
+    ODIN_OFFER_FOUND: "ODIN offer found"
+    ODIN_NOT_FOUND: "ODIN offer not found"
+    INTENT_REQUIRED: "Main intent required (MP/FC/WFS)"
+    INTENT_RESOLVED: "Main intent resolved"
+    SUB_INTENT_MAIN: "Main eligibility flow"
+    SUB_INTENT_COST_RT: "COST RT sub-SOP"
+    SUB_INTENT_PRE_ORDER: "Pre-Order sub-SOP"
+    SUB_INTENT_REPLENISHABLE: "Replenishable sub-SOP"
+    SUB_INTENT_SHIPSIZE: "Shipsize sub-SOP"
+    SUB_INTENT_SHIP_CLASS: "Ship Class sub-SOP"
+    SUB_INTENT_SORTABLE: "Sortable sub-SOP"
+    SUB_INTENT_GIFTING: "Gifting sub-SOP"
+    SUB_INTENT_SUBSTITUTION: "Substitution sub-SOP"
+    SUB_INTENT_ACS: "ACS sub-SOP"
+    SUB_INTENT_FTC: "FTC sub-SOP"
+    SUB_INTENT_ENFORCEMENT: "Seller Enforcement sub-SOP"
+    SUB_INTENT_RESTRICTION: "DEW Restriction sub-SOP"
+    OFFER_FULLY_CREATED: "Offer is fully created (oa.ofrCrt=true)"
+    OFFER_NOT_CREATED: "Offer not fully created (oa.ofrCrt!=true)"
+    OFFER_CRT_UNKNOWN: "Offer-created flag missing or unparseable"
+    OFFER_ID_VALID: "Offer ID matches the 32-char hex contract"
+    OFFER_ID_INVALID: "Offer ID does not match the 32-char hex contract"
+    CASE1_PROCEED: "Case 1 gates pass — continue to AURUM"
+    CASE1_BLOCKED: "Case 1 gate failed — see block_code for the cause"
+    ENFORCEMENT_NOT_APPLICABLE: "Internal seller — enforcement skipped"
+    ENFORCEMENT_CLEAR: "Relevant path not enforced"
+    ENFORCEMENT_BLOCKED: "Relevant path is enforced"
+    DEW_RESTRICTIONS_PRESENT: "DEW restriction paths returned"
+    DEW_NO_RESTRICTIONS: "DEW returned no restriction paths"
+    AURUM_NODE_MISSING: "Node missing in AURUM"
+    AURUM_NODE_INACTIVE: "AURUM node inactive / dccSts=false"
+    AURUM_PATHS_PRESENT: "AURUM paths returned"
+    AURUM_NO_PATHS: "AURUM returned no paths"
+    DEW_PATHS_PRESENT: "DEW paths returned"
+    DEW_NO_PATHS: "DEW returned no paths"
+    PROMISE_PRESENT: "Wakanda promise present"
+    PROMISE_MISSING: "Wakanda promise missing"
+    CONSOLIDATED_FC_PATHS_PRESENT: "Consolidated FC paths returned"
+    CONSOLIDATED_FC_NO_PATHS: "Consolidated FC returned no paths"
+    SHIPNODE_PRESENT: "Shipnode record present"
+    SHIPNODE_NOT_FOUND: "Shipnode record not found"
+    IQS_ITEM_PRESENT: "IQS itemNumber resolved"
+    IQS_ITEM_MISSING: "IQS itemNumber missing"
+    DEW_SELLER_PRESENT: "DEW seller record present"
+    DEW_SELLER_MISSING: "DEW seller record missing"
+    DCC_PRESENT: "DCC record present"
+    DCC_MISSING: "DCC record missing"
+    SHIPSIZE_DERIVED: "Shipsize derived from dimensions"
+    SHIPSIZE_INPUTS_MISSING: "Shipsize inputs missing"
+
+# ── Resolution status mapping ─────────────────────────────────────
+resolution_statuses:
+  statuses:
+    resolved: "resolved"
+    escalated: "escalated"
+    investigation_required: "investigation_required"
+    blocked: "blocked"
+    pending_intent: "pending_intent"
+  closure_pattern: '^[\s\-\*>#]*\**\s*status:\s*\**\s*(.+?)[\s\*]*$'
+  default_status: "investigation_required"
+
+safety_net_overrides: []
+safety_net_dimension_checks: []
+
+# ── Triage extraction (deterministic) ─────────────────────────────
+# Two inputs need to be pulled out of the natural-language request:
+#   - offer_id: 32-char uppercase hex (the ODIN Offer ID)
+#   - node_id : short decimal node number (1–8 digits)
+# external_ref_pattern matches the offer id so it lands on
+# state.external_ref; node_id is pulled from the named aliases below.
+triage_extraction:
+  external_ref_pattern: "([A-F0-9]{32})"
+  fields:
+    - name: offer_id
+      aliases: ["Offer", "Offer ID", "OfferId", "offerId", "OID", "offer"]
+      required: true
+    - name: node_id
+      aliases: ["Node", "Node ID", "NodeId", "nodeId", "Distributor", "FC", "fc"]
+      required: true
+  symptom_rules:
+    - symptom: online_eligibility
+      keywords: ["online", "eligibility", "fc", "wfs", "mp", "marketplace", "limo"]
+  default_symptom: online_eligibility
+  description_marker: "--- Full Description ---"
+
+# ── Evidence field extraction ─────────────────────────────────────
+evidence_extraction:
+  defaults: {}
+  rules:
+    # ── ODIN fields ──
+    - field: offer_id
+      tool_match: odin_01
+      preview_keys: ["offer_id"]
+    - field: seller_id
+      tool_match: odin_01
+      preview_keys: ["seller_id"]
+    - field: seller_type
+      tool_match: odin_01
+      preview_keys: ["seller_type"]
+    - field: offer_created
+      tool_match: odin_01
+      preview_keys: ["offer_created"]
+    - field: offer_type
+      tool_match: odin_01
+      preview_keys: ["offer_type"]
+    - field: product_id
+      tool_match: odin_01
+      preview_keys: ["product_id"]
+    - field: wfs_eligible
+      tool_match: odin_01
+      preview_keys: ["wfs_eligible"]
+    - field: ftc
+      tool_match: odin_01
+      preview_keys: ["ftc"]
+    - field: item_class_id
+      tool_match: odin_01
+      preview_keys: ["item_class_id"]
+    - field: goods_and_svc_type
+      tool_match: odin_01
+      preview_keys: ["goods_and_svc_type"]
+    - field: ship_size_code_odin
+      tool_match: odin_01
+      preview_keys: ["ship_size_code_odin"]
+    - field: ship_class_code
+      tool_match: odin_01
+      preview_keys: ["ship_class_code"]
+    - field: sortable_flag_odin
+      tool_match: odin_01
+      preview_keys: ["sortable_flag_odin"]
+    - field: ase_odin
+      tool_match: odin_01
+      preview_keys: ["ase_odin"]
+    - field: product_type
+      tool_match: odin_01
+      preview_keys: ["product_type"]
+    - field: acc_d_nbr
+      tool_match: odin_01
+      preview_keys: ["acc_d_nbr"]
+    - field: approved_for_animals
+      tool_match: odin_01
+      preview_keys: ["approved_for_animals"]
+    - field: replen_flag_odin
+      tool_match: odin_01
+      preview_keys: ["replen_flag_odin"]
+    # ── Intent classifier ──
+    - field: intent
+      tool_match: classify_intent
+      preview_keys: ["intent"]
+    - field: sub_intent
+      tool_match: classify_sub_intent
+      preview_keys: ["sub_intent"]
+    # ── AURUM FC analyzer ──
+    - field: aurum_node_id
+      tool_match: analyze_aurum_fc
+      preview_keys: ["aurum_node_id"]
+    - field: aurum_node_type
+      tool_match: analyze_aurum_fc
+      preview_keys: ["aurum_node_type"]
+    - field: aurum_node_status
+      tool_match: analyze_aurum_fc
+      preview_keys: ["aurum_node_status"]
+    - field: aurum_dcc_status
+      tool_match: analyze_aurum_fc
+      preview_keys: ["aurum_dcc_status"]
+    - field: aurum_inclusions
+      tool_match: analyze_aurum_fc
+      preview_keys: ["inclusions"]
+    - field: aurum_exclusions
+      tool_match: analyze_aurum_fc
+      preview_keys: ["exclusions"]
+    # ── DEW / Promise / Consolidated ──
+    - field: dew_paths
+      tool_match: analyze_dew_fc
+      preview_keys: ["paths"]
+    - field: promise_present
+      tool_match: analyze_promise
+      preview_keys: ["promise_present"]
+    - field: promise_paths
+      tool_match: analyze_promise
+      preview_keys: ["paths"]
+    - field: consolidated_paths
+      tool_match: analyze_consolidated_fc
+      preview_keys: ["paths"]
+    - field: fulfillment_speed
+      tool_match: analyze_consolidated_fc
+      preview_keys: ["fulfillment_speed"]
+    # ── Sub-SOP evidence ──
+    - field: iqs_item_number
+      tool_match: iqs_si_01
+      preview_keys: ["iqs_item_number"]
+    - field: iqs_partnership_type_code
+      tool_match: shipnodes_01
+      preview_keys: ["iqs_partnership_type_code"]
+    - field: shipnode_status
+      tool_match: shipnodes_01
+      preview_keys: ["shipnode_status"]
+    - field: shipnode_item_id
+      tool_match: shipnodes_01
+      preview_keys: ["shipnode_item_id"]
+    - field: legacy_distributor_id
+      tool_match: shipnodes_01
+      preview_keys: ["legacy_distributor_id"]
+    - field: ase_status
+      tool_match: dew_seller_01
+      preview_keys: ["ase_status"]
+    - field: ase_seller
+      tool_match: dew_seller_01
+      preview_keys: ["ase_seller"]
+    - field: acs_enabled
+      tool_match: dcc_01
+      preview_keys: ["acs_enabled"]
+    - field: substitution_restrictions
+      tool_match: analyze_substitution
+      preview_keys: ["restrictions"]
+    - field: substitution_restrictions_csv
+      tool_match: analyze_substitution
+      preview_keys: ["restrictions_csv"]
+    - field: shipsize_derived
+      tool_match: derive_shipsize
+      preview_keys: ["shipsize_derived"]
+    - field: girth
+      tool_match: derive_shipsize
+      preview_keys: ["girth"]
+    - field: shipsize_logic_note
+      tool_match: derive_shipsize
+      preview_keys: ["shipsize_logic_note"]
+    # ── Seller Enforcement ──
+    - field: offer_fully_created
+      tool_match: odin_ofr_crt_01
+      preview_keys: ["ofr_crt_norm"]
+    - field: enforcement_scope
+      tool_match: seller_enforcement_classify_01
+      preview_keys: ["scope"]
+    - field: enforcement_blocked
+      tool_match: seller_enforcement_classify_01
+      preview_keys: ["blocked"]
+    - field: enforced_paths
+      tool_match: seller_enforcement_classify_01
+      preview_keys: ["enforced"]
+    # ── DEW Restriction ──
+    - field: restriction_groups
+      tool_match: dew_restriction_group_01
+      preview_keys: ["groups"]
+    # ── Sub-SOP analyzers + gates ──
+    - field: preorder_flag
+      tool_match: analyze_preorder_consolidated
+      preview_keys: ["preorder_flag"]
+    - field: preorder_consolidated_street_date
+      tool_match: analyze_preorder_consolidated
+      preview_keys: ["preorder_consolidated_street_date"]
+    - field: preorder_street_date
+      tool_match: analyze_preorder_shipnodes
+      preview_keys: ["preorder_street_date"]
+    - field: replenishment_flag
+      tool_match: analyze_replenishable_shipnodes
+      preview_keys: ["replenishment_flag"]
+    - field: unit_height
+      tool_match: analyze_shipsize_consolidated
+      preview_keys: ["unit_height"]
+    - field: unit_length
+      tool_match: analyze_shipsize_consolidated
+      preview_keys: ["unit_length"]
+    - field: unit_width
+      tool_match: analyze_shipsize_consolidated
+      preview_keys: ["unit_width"]
+    - field: unit_weight
+      tool_match: analyze_shipsize_consolidated
+      preview_keys: ["unit_weight"]
+    - field: shipsize_consolidated
+      tool_match: analyze_shipsize_consolidated
+      preview_keys: ["shipsize_consolidated"]
+    - field: sortable_consolidated
+      tool_match: analyze_sortable_consolidated
+      preview_keys: ["sortable_consolidated"]
+    - field: gifting_eligibility
+      tool_match: analyze_gifting
+      preview_keys: ["gifting_eligibility"]
+    - field: allow_gift_message
+      tool_match: analyze_gifting
+      preview_keys: ["allow_gift_message"]
+    - field: allow_gift_receipt
+      tool_match: analyze_gifting
+      preview_keys: ["allow_gift_receipt"]
+    - field: allow_gift_wrap
+      tool_match: analyze_gifting
+      preview_keys: ["allow_gift_wrap"]
+    - field: gift_overbox_eligible
+      tool_match: analyze_gifting
+      preview_keys: ["gift_overbox_eligible"]
+    - field: ftc_consolidated
+      tool_match: analyze_ftc_consolidated
+      preview_keys: ["ftc_consolidated"]
+    - field: preorder_verdict
+      tool_match: preorder_verdict
+      preview_keys: ["preorder_verdict"]
+    # ── Case 1 deterministic gate ──
+    - field: case1_block_code
+      tool_match: case1_gate_01
+      preview_keys: ["block_code"]
+    - field: case1_block_reason
+      tool_match: case1_gate_01
+      preview_keys: ["stop_message"]
+    - field: case1_notice_code
+      tool_match: case1_gate_01
+      preview_keys: ["notice_code"]
+    - field: case1_notice_message
+      tool_match: case1_gate_01
+      preview_keys: ["notice_message"]
+
+# ── Closure templates + verdict inference ─────────────────────────
+# Two templates only — closure.j2 renders the universal main + sub-SOP
+# blocks (driven by state.intent + state.sub_intent), closure_blocked.j2
+# renders an early-stop summary when ODIN / intent gate / sub-SOP
+# preconditions fail.
+closure_templates:
+  verdict_field: verdict
+  template_map:
+    ELIGIBLE: closure.j2
+    PARTIAL: closure.j2
+    NOT_ELIGIBLE: closure.j2
+    BLOCKED: closure_blocked.j2
+    PENDING_INTENT: closure_blocked.j2
+  default_template: closure.j2
+  fallback_verdict: BLOCKED
+  verdict_inference:
+    - verdict: ELIGIBLE
+      runbook_keywords:
+        - "RBK-ONLINE-FC-ELIGIBLE"
+        - "RBK-ONLINE-WFS-ELIGIBLE"
+        - "RBK-ONLINE-MP-ELIGIBLE"
+        - "RBK-ONLINE-ENFORCEMENT-CLEAR"
+        - "RBK-ONLINE-ENFORCEMENT-NOT-APPLICABLE"
+        - "RBK-ONLINE-RESTRICTION-NONE"
+        - "RBK-ONLINE-COST-RT-PROCEED"
+        - "RBK-ONLINE-PREORDER-FUTURE-DATE"
+        - "RBK-ONLINE-REPLEN-TRUE"
+        - "RBK-ONLINE-ACS-ENROLLED"
+        - "RBK-ONLINE-FTC-PHARMACY-PETS"
+        - "RBK-ONLINE-FTC-WMT-GIFT-CARD"
+        - "RBK-ONLINE-FTC-NON-WMT-GIFT-CARD"
+        - "RBK-ONLINE-FTC-FREIGHT"
+        - "RBK-ONLINE-FTC-PHOTOS"
+        - "RBK-ONLINE-FTC-TIRE"
+        - "RBK-ONLINE-FTC-DIGITAL"
+        - "RBK-ONLINE-FTC-STANDARD"
+    - verdict: PARTIAL
+      runbook_keywords:
+        - "RBK-ONLINE-FC-PARTIAL"
+        - "RBK-ONLINE-MP-PARTIAL"
+    - verdict: NOT_ELIGIBLE
+      runbook_keywords:
+        - "RBK-ONLINE-FC-NOT-ELIGIBLE"
+        - "RBK-ONLINE-WFS-NOT-ELIGIBLE"
+        - "RBK-ONLINE-MP-NOT-ELIGIBLE"
+        - "RBK-ONLINE-AURUM-NODE-MISSING"
+        - "RBK-ONLINE-AURUM-NODE-INACTIVE"
+        - "RBK-ONLINE-ENFORCEMENT-BLOCKED"
+        - "RBK-ONLINE-RESTRICTION-PRESENT"
+        - "RBK-ONLINE-COST-RT-INACTIVE"
+        - "RBK-ONLINE-PREORDER-PAST-DATE"
+        - "RBK-ONLINE-REPLEN-FALSE"
+        - "RBK-ONLINE-REPLEN-MISMATCH"
+    - verdict: PENDING_INTENT
+      runbook_keywords: ["RBK-ONLINE-INTENT-REQUIRED"]
+    - verdict: BLOCKED
+      runbook_keywords:
+        - "RBK-ONLINE-ODIN-NOT-FOUND"
+        - "RBK-ONLINE-OFFER-NOT-CREATED"
+        - "RBK-ONLINE-OTYPE-INVALID"
+        - "RBK-ONLINE-COST-RT-NO-SI"
+        - "RBK-ONLINE-COST-RT-STORES-ONLY"
+        - "RBK-ONLINE-PREORDER-SELLER-EXTERNAL"
+        - "RBK-ONLINE-PREORDER-NO-STREET-DATE"
+        - "RBK-ONLINE-REPLEN-SELLER-EXTERNAL"
+        - "RBK-ONLINE-REPLEN-MISSING"
+        - "RBK-ONLINE-ACS-SELLER-NOT-ENROLLED"
+        - "RBK-ONLINE-ACS-INPUTS-MISSING"
+        - "RBK-ONLINE-ENFORCEMENT-OFFER-NOT-CREATED"
+        - "RBK-ONLINE-RESTRICTION-OFFER-NOT-CREATED"
+        - "RBK-ONLINE-ESCALATE"
+  post_verdict_actions: []
+
+# ── Approved actions ──────────────────────────────────────────────
+# The HITL gate exposes three "approved actions" — one per main
+# intent.  Each is a no-op tool whose effect is captured purely
+# through the resume_value of the Slack callback (the framework
+# encodes the selected action's payload into resume_value, which the
+# pipeline picks up as state.intent on resume).
+approved_actions:
+  - id: pick_mp
+    tool: ACT-NOOP-01
+    enabled: true
+    requires_external_id: false
+    params:
+      intent: "MP"
+    state_params: []
+    closure_fields: []
+    slack_success: "✅ Continuing with **MP** intent"
+    slack_failure: "❌ Failed to record MP selection: {error}"
+
+  - id: pick_fc
+    tool: ACT-NOOP-01
+    enabled: true
+    requires_external_id: false
+    params:
+      intent: "FC"
+    state_params: []
+    closure_fields: []
+    slack_success: "✅ Continuing with **FC** intent"
+    slack_failure: "❌ Failed to record FC selection: {error}"
+
+  - id: pick_wfs
+    tool: ACT-NOOP-01
+    enabled: true
+    requires_external_id: false
+    params:
+      intent: "WFS"
+    state_params: []
+    closure_fields: []
+    slack_success: "✅ Continuing with **WFS** intent"
+    slack_failure: "❌ Failed to record WFS selection: {error}"
+
+# ── Approval workflow ─────────────────────────────────────────────
+# HITL gate: when classify_intent emits INTENT_REQUIRED, the runtime
+# posts a Slack menu with three buttons (MP / FC / WFS).  The
+# resume_value carries the selected intent back into state.intent,
+# the graph re-enters classify_intent and proceeds to INTENT_RESOLVED.
+approval_workflow:
+  enabled: true
+  provider: slack
+  provider_display_name: "Slack"
+  findings_extractors:
+    - field: offer_id
+      tool: __state__
+      path: "offer_id"
+    - field: node_id
+      tool: __state__
+      path: "node_id"
+    - field: seller_id
+      tool: diag_odin_01
+      path: "seller_id"
+    - field: seller_type
+      tool: diag_odin_01
+      path: "seller_type"
+    - field: wfs_eligible
+      tool: diag_odin_01
+      path: "wfs_eligible"
+    - field: product_id
+      tool: diag_odin_01
+      path: "product_id"
+  verdict_field: verdict
+  verdict_actions:
+    PENDING_INTENT:
+      actions:
+        - pick_fc
+        - pick_wfs
+        - pick_mp
+      previews:
+        status: "Awaiting human input — select MP, FC, or WFS"
+        prompt: >
+          Which fulfillment intent should we validate for this
+          (offer, node)?  FC = Walmart 1P fulfillment, WFS = Walmart
+          Fulfillment Services, MP = Marketplace seller-fulfilled.
+    DEFAULT:
+      actions: []
+      previews:
+        status: "Validation complete — see closure summary"
+  fallback_verdict: BLOCKED
+
+# ── Slack notification config ─────────────────────────────────────
+slack:
+  client_name: "limo-online-eligibility-agent"
+  client_version: "0.1.0"
+  thread_title_template: "🛒 {ref_link} — LIMO Online Eligibility"
+  thread_title_fallback: "🛒 *{external_ref}* — LIMO Online Eligibility"
+  notify_context_fields:
+    - label: "Offer"
+      raw_keys: ["offer_id"]
+    - label: "Node"
+      raw_keys: ["node_id"]
+    - label: "Seller"
+      raw_keys: ["seller_id"]
+    - label: "Intent"
+      raw_keys: ["intent"]
+    - label: "Sub-SOP"
+      raw_keys: ["sub_intent"]
+
+# ── Runtime entry points ──────────────────────────────────────────
+runtime:
+  state_schema: "packs.limo_online_validation.state:OnlineEligibilityState"
+  state_factory: "packs.limo_online_validation.state:empty_online_eligibility_state"
+
+# ── Pipelines ─────────────────────────────────────────────────────
+pipelines:
+  incident:
+    type: selector
+    max_turns: 250
+    termination_agent: ClosureAgent
+    selector_prompt: >
+      You are the orchestrator for the LIMO Online Eligibility
+      pipeline.  Select the NEXT agent strictly based on pipeline
+      stage.  Each agent speaks ONCE per resume cycle.
+
+      PIPELINE ORDER (strictly sequential — never go backward):
+        1. TriageAgent     → extracts offer_id + node_id from the
+                              user request, classifies sub-intent
+                              from the work-item text.
+        2. DiagnosticAgent → calls ODIN, classifies main intent
+                              (HITL Slack gate when missing), then
+                              walks AURUM FC + DEW FC + Promise +
+                              Consolidated, plus the matching sub-SOP
+                              tools.
+        3. DecisionAgent   → mapped deterministically by the runtime.
+        4. ActionAgent     → no-op for the closing pass; the HITL
+                              gate fires from DecisionAgent when the
+                              verdict is PENDING_INTENT.
+        5. ClosureAgent    → renders the closure template and terminates.
+
+      RULES:
+        - NEVER select an agent that has already produced output in
+          the current cycle.
+        - On HITL resume (intent supplied via Slack), restart from
+          DiagnosticAgent so the post-intent path runs.
+        - After ClosureAgent speaks, the pipeline MUST end.
+    agents:
+      - name: TriageAgent
+        role: Extracts offer_id, node_id, and the sub-intent from the inbound request
+        prompt_file: triage.j2
+        tools:
+          - DIAG-CLASSIFY-SUB-INTENT
+
+      - name: DiagnosticAgent
+        role: >
+          Walks the SOP — ODIN → intent classifier → AURUM FC + DEW
+          FC + Promise + Consolidated FC → sub-SOP tools (IQS,
+          Shipnodes, DEW Seller, DCC, shipsize, substitution).
+        prompt_file: diagnostic.j2
+        tools:
+          - DIAG-OFFER-ID-VALIDATE-01
+          - DIAG-INTENT-EXTRACT-01
+          - DIAG-CASE1-GATE-01
+          - DIAG-ODIN-01
+          - DIAG-CLASSIFY-INTENT
+          - DIAG-AURUM-FC-01
+          - DIAG-DEW-FC-01
+          - DIAG-PROMISE-01
+          - DIAG-CONSOLIDATED-FC-01
+          - DIAG-ANALYZE-AURUM-FC
+          - DIAG-ANALYZE-DEW-FC
+          - DIAG-ANALYZE-PROMISE
+          - DIAG-ANALYZE-CONSOLIDATED-FC
+          - DIAG-ANALYZE-SUBSTITUTION
+          - DIAG-IQS-SI-01
+          - DIAG-SHIPNODES-01
+          - DIAG-DEW-SELLER-01
+          - DIAG-DCC-01
+          - DIAG-DERIVE-SHIPSIZE
+          - DIAG-ODIN-OFR-CRT-01
+          - DIAG-SELLER-ENFORCEMENT-FETCH-01
+          - DIAG-SELLER-ENFORCEMENT-CLASSIFY-01
+          - DIAG-DEW-RESTRICTION-FETCH-01
+          - DIAG-DEW-RESTRICTION-GROUP-01
+          - DIAG-ANALYZE-PREORDER-CONSOLIDATED
+          - DIAG-ANALYZE-PREORDER-SHIPNODES
+          - DIAG-ANALYZE-REPLENISHABLE-SHIPNODES
+          - DIAG-ANALYZE-SHIPSIZE-CONSOLIDATED
+          - DIAG-ANALYZE-SORTABLE-CONSOLIDATED
+          - DIAG-ANALYZE-GIFTING
+          - DIAG-ANALYZE-ACS-CONSOLIDATED
+          - DIAG-ANALYZE-FTC-CONSOLIDATED
+          - DIAG-COST-RT-GATE-01
+          - DIAG-PREORDER-VERDICT-01
+          - DIAG-REPLENISHABLE-VERDICT-01
+          - DIAG-ACS-VERDICT-01
+          - DIAG-FTC-MATRIX-01
+
+      - name: DecisionAgent
+        role: Maps observations to an online eligibility runbook verdict
+        prompt_file: decision.j2
+        tools:
+          - DIAG-DECISION-MATRIX
+
+      - name: ActionAgent
+        role: Read-only pack — actions are limited to the HITL intent pick
+        prompt_file: action.j2
+        tools: []
+
+      - name: ClosureAgent
+        role: Renders the closure template with the eligibility summary
+        prompt_file: closure.j2
+        tools: []
+
+  retrieval:
+    type: round_robin
+    max_turns: 10
+    termination_agent: RetrievalAgent
+    agents:
+      - name: RetrievalAgent
+        role: >
+          Answers natural-language questions about online eligibility
+          for a given offer + node + intent.
+        prompt_file: retrieval.j2
+        tools:
+          - DIAG-OFFER-ID-VALIDATE-01
+          - DIAG-INTENT-EXTRACT-01
+          - DIAG-SUB-SOP-ROUTER-01
+          - DIAG-CASE1-GATE-01
+          - DIAG-ODIN-01
+          - DIAG-AURUM-FC-01
+          - DIAG-AURUM-FC-ANALYZED-01
+          - DIAG-ANALYZE-AURUM-FC
+          - DIAG-DEW-FC-GATED-01
+          - DIAG-PROMISE-GATED-01
+          - DIAG-CONSOLIDATED-FC-01
+          - DIAG-CONSOLIDATED-FC-GATED-01
+          - DIAG-ODIN-OFR-CRT-01
+          - DIAG-SELLER-ENFORCEMENT-FETCH-01
+          - DIAG-SELLER-ENFORCEMENT-CLASSIFY-01
+          - DIAG-DEW-RESTRICTION-FETCH-01
+          - DIAG-DEW-RESTRICTION-GROUP-01
+          - DIAG-SHIPNODES-01
+          - DIAG-ANALYZE-SHIPNODES
+          - DIAG-IQS-SI-01
+          - DIAG-DEW-SELLER-01
+          - DIAG-ANALYZE-DEW-SELLER
+          - DIAG-DCC-01
+          - DIAG-ANALYZE-DCC
+          - DIAG-ACS-INPUTS-BUNDLE-01
+          - DIAG-DERIVE-SHIPSIZE
+          - DIAG-ANALYZE-SUBSTITUTION
+          - DIAG-ANALYZE-PREORDER-CONSOLIDATED
+          - DIAG-ANALYZE-PREORDER-SHIPNODES
+          - DIAG-ANALYZE-REPLENISHABLE-SHIPNODES
+          - DIAG-ANALYZE-SHIPSIZE-CONSOLIDATED
+          - DIAG-ANALYZE-SORTABLE-CONSOLIDATED
+          - DIAG-ANALYZE-GIFTING
+          - DIAG-ANALYZE-ACS-CONSOLIDATED
+          - DIAG-ANALYZE-FTC-CONSOLIDATED
+          - DIAG-COST-RT-GATE-01
+          - DIAG-PREORDER-VERDICT-01
+          - DIAG-REPLENISHABLE-VERDICT-01
+          - DIAG-ACS-VERDICT-01
+          - DIAG-FTC-MATRIX-01

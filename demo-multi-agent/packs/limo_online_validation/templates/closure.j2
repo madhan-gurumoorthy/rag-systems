@@ -1,0 +1,206 @@
+LIMO ONLINE ELIGIBILITY — CLOSURE SUMMARY
+═══════════════════════════════════════════
+
+Verdict:   {{ verdict | default("ELIGIBLE") }}
+Offer ID:  {{ offer_id | default(external_ref) }}
+Node ID:   {{ node_id | default("—") }}
+Intent:    {{ intent | default("—") | upper }}
+Sub-SOP:   {{ sub_intent | default("main") | upper }}
+{% if verdict_reason %}
+Reason: {{ verdict_reason }}
+{% endif %}
+{% if case1_notice_message %}
+Notice ({{ case1_notice_code | default("CASE1_NOTICE") }}): {{ case1_notice_message }}
+{% endif %}
+
+─── ODIN Attributes ───
+  - Offer ID (oid):                {{ offer_id | default("—") }}
+  - Seller ID (sid):               {{ seller_id | default("—") }}
+  - Seller Type (styp):            {{ seller_type | default("—") }}
+  - Offer Created (oa.ofrCrt):     {{ offer_created | default("—") }}
+  - Offer Type (oa.otyp):          {{ offer_type | default("—") }}
+  - Product ID (oa.prdId):         {{ product_id | default("—") }}
+  - WFS Eligible (oa.wfsElig):     {{ wfs_eligible | default("—") }}
+  - FTC (oa.ftc):                  {{ ftc_csv | default(ftc) | default("—") }}
+  - Item Class ID (oa.itmClsId):   {{ item_class_id | default("—") }}
+{% if goods_and_svc_type %}  - Goods & Svc Type (oa.gsTyp):   {{ goods_and_svc_type }}
+{% endif %}
+{% if ship_size_code_odin %}  - Ship Size Code (oa.shpSzCd):   {{ ship_size_code_odin }}
+{% endif %}
+{% if ship_class_code %}  - Ship Class Code (oa.shpClsCd): {{ ship_class_code }}
+{% endif %}
+{% if sortable_flag_odin is not none %}  - Sortable Flag (oa.srtFlg):     {{ sortable_flag_odin }}
+{% endif %}
+{% if ase_odin is not none %}  - ASE (oa.oss.ase):              {{ ase_odin }}
+{% endif %}
+{% if product_type %}  - Product Type (oa.ptyp):        {{ product_type }}
+{% endif %}
+{% if acc_d_nbr %}  - Acct Dept Number (accDNbr):    {{ acc_d_nbr }}
+{% endif %}
+{% if approved_for_animals %}  - Approved For Animals (afa):    {{ approved_for_animals }}
+{% endif %}
+{% if replen_flag_odin is not none %}  - Replenish Flag (oa.rplnFlg):   {{ replen_flag_odin }}
+{% endif %}
+
+{% if intent in ("FC", "MP") %}
+─── AURUM FC — Node Projection ───
+  - Node ID:     {{ aurum_node_id | default(node_id) }}
+  - Node Type:   {{ aurum_node_type | default("—") }}
+  - Node Status: {{ aurum_node_status | default("—") }}
+  - DCC Status:  {{ aurum_dcc_status | default("—") }}
+
+Inclusion Paths:
+{% for inc in aurum_inclusions | default([]) %}
+  {{ inc.path }} - Included - {{ inc.computed_reason | default("—") }}
+{% else %}
+  (none)
+{% endfor %}
+
+Exclusion Paths:
+{% for exc in aurum_exclusions | default([]) %}
+  {{ exc.path }} - Excluded - {{ exc.computed_reason | default("—") }}
+{% else %}
+  (none)
+{% endfor %}
+
+─── DEW FC Eligible Paths ───
+{% for p in dew_paths | default([]) %}
+Path - {{ p.path }}
+fulfillmentMethods - {{ p.fulfillment_methods_csv | default("—") }}
+Types - {{ p.types_csv | default("—") }}
+
+{% else %}
+(no DEW FC outboundPaths returned)
+{% endfor %}
+
+─── Wakanda Promise ───
+  - Promise Present: {{ promise_present | default(False) }}
+
+─── Eligibility Consolidated FC ───
+{% for p in consolidated_paths | default([]) %}
+Path - {{ p.path }}
+fulfillmentMethods - {{ p.fulfillment_methods_csv | default("—") }}
+Types - {{ p.types_csv | default("—") }}
+
+{% else %}
+(no consolidated FC paths returned)
+{% endfor %}
+
+  - Fulfillment Speed: {{ fulfillment_speed | default("—") }}
+{% endif %}
+
+{% if intent == "WFS" %}
+─── WFS Eligibility ───
+  - oa.wfsElig:       {{ wfs_eligible | default("—") }}
+  - Decision:          {{ "ELIGIBLE" if wfs_eligible == "true" else "NOT ELIGIBLE" }}
+{% endif %}
+
+{% if intent == "MP" %}
+─── MP (Marketplace) — Notes ───
+  - Seller Type (styp): {{ seller_type | default("—") }}
+  - WFS Eligible:       {{ wfs_eligible | default("—") }}
+  - Path eligibility is computed from the AURUM / DEW / Promise /
+    Consolidated cascade above; wfsElig is informational only.
+{% endif %}
+
+{% if sub_intent == "cost_rt" %}
+─── COST RT Sub-SOP ───
+  - IQS Item Number:           {{ iqs_item_number | default("—") }}
+  - Partnership Type Code:     {{ iqs_partnership_type_code | default("—") }}
+  - Shipnode Status:           {{ shipnode_status | default("—") }}
+  - Shipnode Item ID:          {{ shipnode_item_id | default("—") }}
+  - Legacy Distributor ID:     {{ legacy_distributor_id | default("—") }}
+{% endif %}
+
+{% if sub_intent == "pre_order" %}
+─── Pre-Order Sub-SOP ───
+  - Preorder Street Date (ODIN):       {{ preorder_street_date | default("—") }}
+  - Preorder Flag:                     {{ preorder_flag | default("—") }}
+  - Preorder Consolidated Street Date: {{ preorder_consolidated_street_date | default("—") }}
+  - Verdict:                           {{ preorder_verdict | default("—") }}
+{% endif %}
+
+{% if sub_intent == "replenishable" %}
+─── Replenishable Sub-SOP ───
+  - oa.rplnFlg:               {{ replen_flag_odin | default("—") }}
+  - Replenishment Flag:        {{ replenishment_flag | default("—") }}
+{% endif %}
+
+{% if sub_intent == "shipsize" %}
+─── Shipsize Sub-SOP ───
+  - Unit Height:             {{ unit_height | default("—") }} in
+  - Unit Length:             {{ unit_length | default("—") }} in
+  - Unit Width:              {{ unit_width  | default("—") }} in
+  - Unit Weight:             {{ unit_weight | default("—") }} lb
+  - Girth:                   {{ girth | default("—") }} in
+  - Shipsize (Consolidated): {{ shipsize_consolidated | default("—") }}
+  - Shipsize (Derived):      {{ shipsize_derived | default("—") }}
+  - Logic Note:              {{ shipsize_logic_note | default("—") }}
+{% endif %}
+
+{% if sub_intent == "ship_class" %}
+─── Ship Class Sub-SOP ───
+  - Ship Class Code (ODIN): {{ ship_class_code | default("—") }}
+{% endif %}
+
+{% if sub_intent == "sortable" %}
+─── Sortable Sub-SOP ───
+  - Sortable Flag (ODIN):       {{ sortable_flag_odin | default("—") }}
+  - Sortable (Consolidated):    {{ sortable_consolidated | default("—") }}
+{% endif %}
+
+{% if sub_intent == "gifting" %}
+─── Gifting Sub-SOP ───
+  - Gifting Eligibility:    {{ gifting_eligibility | default("—") }}
+  - Allow Gift Message:     {{ allow_gift_message  | default("—") }}
+  - Allow Gift Receipt:     {{ allow_gift_receipt  | default("—") }}
+  - Allow Gift Wrap:        {{ allow_gift_wrap     | default("—") }}
+  - Gift Overbox Eligible:  {{ gift_overbox_eligible | default("—") }}
+{% endif %}
+
+{% if sub_intent == "substitution" %}
+─── Substitution Sub-SOP ───
+  - Substitution Allowed:        {{ substitution_allowed | default("—") }}
+  - Substitution Restrictions:   {{ substitution_restrictions_csv | default("No restriction found") }}
+{% endif %}
+
+{% if sub_intent == "acs" %}
+─── ACS Sub-SOP ───
+  - ASE Status (ODIN):       {{ ase_odin | default("—") }}
+  - ASE Status (DEW Seller): {{ ase_status | default("—") }}
+  - ASE Seller:              {{ ase_seller | default("—") }}
+  - ACS Enabled (DCC):       {{ acs_enabled | default("—") }}
+{% endif %}
+
+{% if sub_intent == "ftc" %}
+─── FTC Sub-SOP ───
+  - FTC (ODIN):                 {{ ftc_csv | default(ftc) | default("—") }}
+  - FTC (Consolidated):         {{ ftc_consolidated | default("—") }}
+{% endif %}
+
+{% if sub_intent == "enforcement" %}
+─── Seller Enforcement Sub-SOP ───
+  - Offer Fully Created (oa.ofrCrt): {{ offer_fully_created | default(offer_created) | default("—") }}
+  - Seller Type (styp):              {{ seller_type | default("—") }}
+  - WFS Eligible (wfsElig):          {{ wfs_eligible | default("—") }}
+  - Relevant Path (scope):           {{ enforcement_scope | default("—") }}
+  - Enforced Restrictions:           {% if enforced_paths %}{{ enforced_paths | join(", ") }}{% else %}(none){% endif %}
+  - Enforcement Blocked:             {{ enforcement_blocked | default("—") }}
+{% endif %}
+
+{% if sub_intent == "restriction" %}
+─── DEW Restriction Sub-SOP ───
+  - Offer Fully Created (oa.ofrCrt): {{ offer_fully_created | default(offer_created) | default("—") }}
+{% if restriction_groups %}
+Restriction Paths:
+{% for g in restriction_groups %}
+  - {{ g.path }}
+      States: {% if g.states %}{{ g.states | join(", ") }}{% else %}(none){% endif %}
+{% endfor %}
+{% else %}
+  - Restriction Paths: (none returned by DEW)
+{% endif %}
+{% endif %}
+
+Status: {{ "RESOLVED" if verdict == "ELIGIBLE" else "INVESTIGATION_REQUIRED" }}
+═══════════════════════════════════════════

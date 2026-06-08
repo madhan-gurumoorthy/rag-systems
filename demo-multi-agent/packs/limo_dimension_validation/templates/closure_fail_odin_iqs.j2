@@ -1,0 +1,33 @@
+LIMO DIMENSION VALIDATION — CLOSURE SUMMARY
+═══════════════════════════════════════════
+
+Verdict: FAIL — ODIN vs IQS TI mismatch
+Offer ID:        {{ offer_id | default(external_ref) }}
+Seller ID:       {{ seller_id | default("—", true) }}
+Primary GTIN:    {{ primary_gtin | default("—", true) }}
+
+ODIN Dimensions:
+  - Height: {{ odin_height | default("—", true) }} IN
+  - Length: {{ odin_length | default("—", true) }} IN
+  - Width:  {{ odin_width  | default("—", true) }} IN
+  - Weight: {{ odin_weight | default("—", true) }} LB
+
+{% if iqs_gtins_total and iqs_gtins_total | int > 1 %}
+IQS TI Validation:
+  GTINs Checked: {{ iqs_gtins_checked | default([]) | length }} of {{ iqs_gtins_total }} (Primary + Alternates)
+  Result: None of the GTINs have IQS TI dimensions (GOLD or Supplier)
+          that match the ODIN offer-level dimensions.
+{% else %}
+IQS TI Validation:
+  Result: IQS TI dimensions (GOLD and Supplier) do not match ODIN
+          offer-level dimensions for the primary GTIN.
+{% endif %}
+
+Eligibility Consolidated API validation was NOT performed because
+ODIN and IQS TI dimensions are not in sync.
+
+Action: Escalating to LIMO Ops team for investigation — ODIN
+dimensions do not match any GTIN's IQS TI dimensions.
+
+Status: ESCALATED
+═══════════════════════════════════════════

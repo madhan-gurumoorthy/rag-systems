@@ -1,0 +1,82 @@
+/* LD Portable – WCPContinueShopping */
+
+.ld-wcp-continue-shopping-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ld-wcp-continue-shopping-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.ld-wcp-continue-shopping-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2e2f32;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Layout only — typography/color from LD LinkButton */
+.ld-wcp-continue-shopping-see-all {
+  flex-shrink: 0;
+}
+
+.ld-wcp-continue-shopping-scroll-row {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0 0 4px;
+  cursor: grab;
+}
+
+.ld-wcp-continue-shopping-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+.ld-wcp-continue-shopping-category-card {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px;
+  gap: 8px;
+  width: 340px;
+}
+
+.ld-wcp-continue-shopping-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+
+.ld-wcp-continue-shopping-category-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Layout only — typography/color from LD LinkButton */
+.ld-wcp-continue-shopping-shop-all {
+  flex-shrink: 0;
+}
+
+.ld-wcp-continue-shopping-product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}

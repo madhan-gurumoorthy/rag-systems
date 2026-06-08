@@ -1,0 +1,120 @@
+/* LD Portable - MagicBox */
+.ld-magicbox-magicBox {
+  border-radius: 0.5rem;
+  display: inline-block;
+  isolation: isolate;
+  position: relative;
+  width: 100%;
+}
+
+.ld-magicbox-magicBox.ld-magicbox-borderRadius25 {
+  border-radius: 0.125rem;
+}
+
+.ld-magicbox-magicBox.ld-magicbox-borderRadius50 {
+  border-radius: 0.25rem;
+}
+
+.ld-magicbox-magicBox.ld-magicbox-borderRadius100 {
+  border-radius: 0.5rem;
+}
+
+.ld-magicbox-magicBox.ld-magicbox-borderRadius200 {
+  border-radius: 1rem;
+}
+
+.ld-magicbox-magicBox.ld-magicbox-borderRadiusRound {
+  border-radius: 62.5rem;
+}
+
+.ld-magicbox-magicBox .ld-magicbox-magicGlowContainer {
+  border-radius: inherit;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.ld-magicbox-magicBox .ld-magicbox-magicBoxGradientContainer1,
+.ld-magicbox-magicBox .ld-magicbox-magicBoxGradientContainer2,
+.ld-magicbox-magicBox .ld-magicbox-magicBoxGradientContainer3,
+.ld-magicbox-magicBox .ld-magicbox-magicBoxGradientContainer4 {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.ld-magicbox-magicBox .ld-magicbox-magicGlowSvg {
+  height: 100%;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+}
+
+.ld-magicbox-magicBox .ld-magicbox-magicBoxGradientContainer1 {
+  filter: blur(0.5px);
+}
+
+.ld-magicbox-magicBox .ld-magicbox-magicBoxGradientContainer2 {
+  filter: blur(1px);
+}
+
+.ld-magicbox-magicBox .ld-magicbox-magicBoxGradientContainer3 {
+  filter: blur(3px);
+}
+
+.ld-magicbox-magicBox .ld-magicbox-magicBoxGradientContainer4 {
+  filter: blur(0.5px);
+  mix-blend-mode: hard-light;
+}
+
+.ld-magicbox-stateIdle .ld-magicbox-magicGlowContainer {
+  opacity: 0.7;
+}
+
+.ld-magicbox-stateLoading .ld-magicbox-magicGlowContainer {
+  animation: ld-magicbox-pulse-glow 2s ease-in-out infinite;
+}
+
+.ld-magicbox-stateActive .ld-magicbox-magicGlowContainer {
+  animation: ld-magicbox-shimmer 3s ease-in-out infinite;
+}
+
+.ld-magicbox-magicBoxContentWrapper {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes ld-magicbox-pulse-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes ld-magicbox-shimmer {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ld-magicbox-stateLoading .ld-magicbox-magicGlowContainer,
+  .ld-magicbox-stateActive .ld-magicbox-magicGlowContainer {
+    animation: none;
+  }
+
+  .ld-magicbox-stateLoading .ld-magicbox-magicGlowContainer,
+  .ld-magicbox-stateActive .ld-magicbox-magicGlowContainer {
+    opacity: 0.7;
+  }
+}

@@ -1,0 +1,405 @@
+# LIMO Dimension Validation — SOP Pack
+#
+# Validates that product package dimensions are consistent across
+# ODIN (offer source-of-record), IQS TI (trade-item source), and the
+# Eligibility Consolidated API (downstream).  Accepts a natural-language
+# instruction containing an ODIN Offer ID; the TriageAgent extracts the
+# Offer ID and the DiagnosticAgent walks the SOP.
+#
+# Model credentials are configured in agent_factory/infrastructure/secrets.toml
+# under [default.azure_chat] — NOT in this file.
+
+id: limo_dimension_validation
+name: LIMO Dimension Validation
+version: 0.1.0
+description: >
+  Validates that an offer's product package dimensions are in sync
+  across ODIN, IQS TI RT API, and the Eligibility Consolidated API.
+  Reports PASS / FAIL / INVESTIGATION REQUIRED / BLOCKED and routes
+  mismatches to the LIMO Ops team.
+owner_team: LIMO Ops
+tenant_id: walmart-limo-ops
+default: false
+decision_engine: yaml_rules
+
+# Model config — LLM is used by TriageAgent (Offer ID extraction from
+# natural-language input) and DiagnosticAgent (tool orchestration).
+# Runtime credentials are read from secrets.toml [default.azure_chat].
+model:
+  provider: azure_openai
+  model: gpt-4.1-mini
+  deployment: gpt-4.1-mini
+  api_version: "2024-10-21"
+  endpoint: https://wmtllmgateway.stage.walmart.com/wmtllmgateway
+  max_tokens: 4096
+  temperature: 0.0
+  extra_params: {}
+
+# Pre-triage gate — disabled.  The LIMO entry point is "validate offer X",
+# not a SNOW-routed ticket, so the assignment-group / keyword gate
+# doesn't apply.  TriageAgent extracts the Offer ID from the inbound
+# text instead.
+pre_triage:
+  enabled: false
+
+rules_engine: {}
+
+rag:
+  domain: limo_dimension_validation
+  rag_query_prefix: ""
+  prompt_template: ""
+
+# ── Display labels ────────────────────────────────────────────────
+display:
+  tool_names:
+    diag_odin_01: "ODIN Offer Lookup"
+    diag_mp_classify_01: "MP Offer Classifier"
+    diag_iqs_ti_01: "IQS TI Lookup"
+    diag_consolidated_01: "Eligibility Consolidated API"
+    diag_compare_odin_iqs_01: "ODIN vs IQS Dimension Compare"
+    diag_compare_three_way_01: "ODIN/IQS/Consolidated Three-way Compare"
+    diag_compare_mp_weight_01: "MP Offer Weight Compare"
+    diag_decision_matrix: "Decision Matrix"
+  outcome_labels:
+    ODIN_DIMS_PRESENT: "ODIN dimensions present"
+    ODIN_DIMS_MISSING: "ODIN dimensions missing"
+    ODIN_NOT_FOUND: "ODIN offer not found"
+    TI_DATA_PRESENT: "IQS trade-item records present"
+    TI_DIMS_MISSING: "IQS dimensions missing"
+    CONSOLIDATED_DIMS_PRESENT: "Consolidated dimensions present"
+    CONSOLIDATED_DIMS_MISSING: "Consolidated dimensions missing"
+    ODIN_IQS_MATCH: "ODIN and IQS match"
+    ODIN_IQS_MISMATCH: "ODIN and IQS disagree"
+    ODIN_MISSING_IQS_PRESENT: "ODIN missing, IQS present"
+    ODIN_PRESENT_IQS_MISSING: "ODIN present, IQS missing"
+    BOTH_MISSING: "ODIN and IQS both missing"
+    ALL_MATCH: "All three systems match"
+    CONSOLIDATED_MISMATCH: "Consolidated API differs"
+    CONSOLIDATED_MISSING: "Consolidated dimensions unavailable"
+    MP_WEIGHT_MATCH: "MP offer — weight matches"
+    MP_WEIGHT_MISMATCH: "MP offer — weight mismatch"
+    MP_OFFER: "Marketplace (MP) offer detected"
+    STANDARD_OFFER: "Standard (non-MP) offer detected"
+
+# ── Resolution status mapping ─────────────────────────────────────
+resolution_statuses:
+  statuses:
+    resolved: "resolved"
+    escalated: "escalated"
+    investigation_required: "investigation_required"
+    blocked: "blocked"
+  closure_pattern: '^[\s\-\*>#]*\**\s*status:\s*\**\s*(.+?)[\s\*]*$'
+  default_status: "investigation_required"
+
+safety_net_overrides: []
+safety_net_dimension_checks: []
+
+# ── Triage extraction (deterministic) ─────────────────────────────
+# 32-char hex tokens (the ODIN Offer ID shape) are pulled out of the
+# inbound text and stamped onto state.offer_id.  When the caller
+# embeds the offer id in a sentence like "Validate offer
+# E981AC30C2C635B999DEEEF8DF07196D", the pattern fires.
+triage_extraction:
+  external_ref_pattern: "([A-F0-9]{32})"
+  fields:
+    - name: offer_id
+      aliases: ["Offer", "Offer ID", "OfferId", "offerId", "OID"]
+      required: true
+  symptom_rules:
+    - symptom: dimension_validation
+      keywords: ["dimension", "dimensions", "limo", "offer", "validate"]
+  default_symptom: dimension_validation
+  description_marker: "--- Full Description ---"
+
+# ── Evidence field extraction ─────────────────────────────────────
+# Pulls structured fields off each tool result so the closure
+# templates can reference them by name.
+evidence_extraction:
+  defaults: {}
+  rules:
+    # ── ODIN fields ──
+    - field: offer_id
+      tool_match: odin_01
+      preview_keys: ["offer_id", "oid"]
+    - field: seller_id
+      tool_match: odin_01
+      preview_keys: ["seller_id", "sid"]
+    - field: seller_type
+      tool_match: odin_01
+      preview_keys: ["seller_type", "styp"]
+    - field: wfs_eligible
+      tool_match: odin_01
+      preview_keys: ["wfs_eligible", "wfsElig"]
+    - field: primary_gtin
+      tool_match: odin_01
+      preview_keys: ["primary_gtin", "gtin"]
+    - field: alternate_gtins
+      tool_match: odin_01
+      preview_keys: ["alternate_gtins"]
+    - field: info_provider_code
+      tool_match: odin_01
+      preview_keys: ["info_provider_code"]
+    - field: odin_height
+      tool_match: odin_01
+      preview_keys: ["odin_height"]
+    - field: odin_length
+      tool_match: odin_01
+      preview_keys: ["odin_length"]
+    - field: odin_width
+      tool_match: odin_01
+      preview_keys: ["odin_width"]
+    - field: odin_weight
+      tool_match: odin_01
+      preview_keys: ["odin_weight"]
+    # ── MP classifier output ──
+    - field: mp_offer
+      tool_match: mp_classify_01
+      preview_keys: ["mp_offer"]
+    - field: mp_classify_reason
+      tool_match: mp_classify_01
+      preview_keys: ["reason"]
+    - field: seller_type_norm
+      tool_match: mp_classify_01
+      preview_keys: ["seller_type_norm"]
+    - field: wfs_eligible_norm
+      tool_match: mp_classify_01
+      preview_keys: ["wfs_eligible_norm"]
+    # ── IQS GOLD dims (from deterministic extractor) ──
+    - field: iqs_gold_height
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_gold_height"]
+    - field: iqs_gold_length
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_gold_length"]
+    - field: iqs_gold_width
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_gold_width"]
+    - field: iqs_gold_weight
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_gold_weight"]
+    - field: iqs_gold_timestamp
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_gold_timestamp"]
+    - field: iqs_gold_capture_method
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_gold_capture_method"]
+    # ── IQS Supplier dims (from deterministic extractor) ──
+    - field: iqs_supplier_height
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_supplier_height"]
+    - field: iqs_supplier_length
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_supplier_length"]
+    - field: iqs_supplier_width
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_supplier_width"]
+    - field: iqs_supplier_weight
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_supplier_weight"]
+    - field: iqs_supplier_timestamp
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_supplier_timestamp"]
+    - field: iqs_supplier_capture_method
+      tool_match: iqs_extract_01
+      preview_keys: ["iqs_supplier_capture_method"]
+    # ── Consolidated dims ──
+    - field: consolidated_height
+      tool_match: consolidated_01
+      preview_keys: ["consolidated_height"]
+    - field: consolidated_length
+      tool_match: consolidated_01
+      preview_keys: ["consolidated_length"]
+    - field: consolidated_width
+      tool_match: consolidated_01
+      preview_keys: ["consolidated_width"]
+    - field: consolidated_weight
+      tool_match: consolidated_01
+      preview_keys: ["consolidated_weight"]
+    # ── GTIN iteration tracking (from DiagnosticAgent output) ──
+    - field: matched_gtin
+      tool_match: compare_odin_iqs_01
+      preview_keys: ["matched_gtin"]
+    - field: iqs_gtins_checked
+      tool_match: compare_odin_iqs_01
+      preview_keys: ["iqs_gtins_checked"]
+    - field: iqs_gtins_total
+      tool_match: compare_odin_iqs_01
+      preview_keys: ["iqs_gtins_total"]
+    # ── Comparator outcomes + explanations ──
+    - field: odin_iqs_outcome
+      tool_match: compare_odin_iqs_01
+      preview_keys: ["outcome"]
+    - field: selection_explanation
+      tool_match: compare_odin_iqs_01
+      preview_keys: ["selection_explanation"]
+    - field: dimension_mismatches
+      tool_match: compare_odin_iqs_01
+      preview_keys: ["mismatches"]
+    - field: three_way_outcome
+      tool_match: compare_three_way_01
+      preview_keys: ["outcome"]
+    - field: three_way_mismatches
+      tool_match: compare_three_way_01
+      preview_keys: ["mismatches"]
+    # ── MP weight comparator output ──
+    - field: mp_weight_outcome
+      tool_match: compare_mp_weight_01
+      preview_keys: ["outcome"]
+    - field: mp_weight_reason
+      tool_match: compare_mp_weight_01
+      preview_keys: ["reason"]
+
+# ── Closure templates + verdict inference ─────────────────────────
+closure_templates:
+  verdict_field: verdict
+  template_map:
+    PASS: closure_pass.j2
+    FAIL_ODIN_IQS: closure_fail_odin_iqs.j2
+    FAIL_CONSOLIDATED: closure_fail_consolidated.j2
+    INVESTIGATION_ODIN_MISSING: closure_inv_odin_missing.j2
+    INVESTIGATION_IQS_MISSING: closure_inv_iqs_missing.j2
+    ODIN_NOT_FOUND: closure_odin_not_found.j2
+    MP_PASS: closure_mp_pass.j2
+    MP_FAIL: closure_mp_fail.j2
+    BLOCKED: closure_blocked.j2
+  default_template: closure_blocked.j2
+  fallback_verdict: BLOCKED
+  verdict_inference:
+    - verdict: PASS
+      runbook_keywords: ["RBK-LIMO-PASS"]
+    - verdict: FAIL_ODIN_IQS
+      runbook_keywords: ["RBK-LIMO-FAIL-ODIN-IQS"]
+    - verdict: FAIL_CONSOLIDATED
+      runbook_keywords: ["RBK-LIMO-FAIL-CONS"]
+    - verdict: INVESTIGATION_ODIN_MISSING
+      runbook_keywords: ["RBK-LIMO-INV-ODIN-MISSING"]
+    - verdict: INVESTIGATION_IQS_MISSING
+      runbook_keywords: ["RBK-LIMO-INV-IQS-MISSING"]
+    - verdict: ODIN_NOT_FOUND
+      runbook_keywords: ["RBK-LIMO-ODIN-NOT-FOUND"]
+    - verdict: MP_PASS
+      runbook_keywords: ["RBK-LIMO-MP-PASS"]
+    - verdict: MP_FAIL
+      runbook_keywords: ["RBK-LIMO-MP-FAIL"]
+    - verdict: BLOCKED
+      runbook_keywords: ["RBK-LIMO-BLOCKED", "RBK-LIMO-BLOCKED-BOTH", "RBK-LIMO-ESCALATE"]
+  post_verdict_actions: []
+
+# ── Approved actions ──────────────────────────────────────────────
+# Read-only validation pack — no post-approval mutations.
+approved_actions: []
+
+# ── Approval workflow ─────────────────────────────────────────────
+approval_workflow:
+  enabled: false
+  provider: concord
+  provider_display_name: "Concord"
+  findings_extractors: []
+  verdict_field: verdict
+  verdict_actions:
+    DEFAULT:
+      actions: []
+      previews:
+        status: "Validation complete — see closure summary"
+  fallback_verdict: BLOCKED
+
+# ── Slack notification config ─────────────────────────────────────
+slack:
+  client_name: "limo-dimension-validation-agent"
+  client_version: "0.1.0"
+  thread_title_template: "📦 {ref_link} — LIMO Dimension Validation"
+  thread_title_fallback: "📦 *{external_ref}* — LIMO Dimension Validation"
+  notify_context_fields:
+    - label: "Offer"
+      raw_keys: ["offer_id"]
+    - label: "Seller"
+      raw_keys: ["seller_id"]
+    - label: "GTIN"
+      raw_keys: ["primary_gtin"]
+
+# ── Runtime entry points ──────────────────────────────────────────
+runtime:
+  state_schema: "packs.limo_dimension_validation.state:IncidentState"
+  state_factory: "packs.limo_dimension_validation.state:empty_incident_state"
+
+# ── Pipelines ─────────────────────────────────────────────────────
+pipelines:
+  incident:
+    type: selector
+    max_turns: 250
+    termination_agent: ClosureAgent
+    selector_prompt: >
+      You are the orchestrator for the LIMO Dimension Validation pipeline.
+      Select the NEXT agent strictly based on the pipeline stage.
+      Each agent speaks ONCE.
+
+      PIPELINE ORDER (strictly sequential — never go backward):
+        1. TriageAgent     → extracts the Offer ID from the user request.
+        2. DiagnosticAgent → calls ODIN, then either the MP weight-only
+                              path (wfsElig=FALSE + EXTERNAL) or the
+                              standard IQS TI + Consolidated path; runs
+                              the appropriate comparator(s).
+        3. DecisionAgent   → mapped deterministically by the runtime.
+        4. ActionAgent     → no-op for this read-only pack.
+        5. ClosureAgent    → renders the closure template and terminates.
+
+      RULES:
+        - NEVER select an agent that has already produced output.
+        - If DiagnosticAgent reported tool failures or SKIPPED steps,
+          still move forward to DecisionAgent.
+        - After ClosureAgent speaks, the pipeline MUST end.
+    agents:
+      - name: TriageAgent
+        role: Extracts the ODIN Offer ID from the inbound request
+        prompt_file: triage.j2
+        tools: []
+
+      - name: DiagnosticAgent
+        role: Walks the LIMO SOP — ODIN, IQS TI, Consolidated, comparators
+        prompt_file: diagnostic.j2
+        tools:
+          - DIAG-ODIN-01
+          - DIAG-MP-CLASSIFY-01
+          - DIAG-IQS-TI-01
+          - DIAG-IQS-EXTRACT-01
+          - DIAG-CONSOLIDATED-01
+          - DIAG-COMPARE-ODIN-IQS-01
+          - DIAG-COMPARE-THREE-WAY-01
+          - DIAG-COMPARE-MP-WEIGHT-01
+
+      - name: DecisionAgent
+        role: Maps comparator outcomes to a LIMO runbook verdict
+        prompt_file: decision.j2
+        tools:
+          - DIAG-DECISION-MATRIX
+
+      - name: ActionAgent
+        role: Read-only pack — no actions performed
+        prompt_file: action.j2
+        tools: []
+
+      - name: ClosureAgent
+        role: Renders the closure template with the validation summary
+        prompt_file: closure.j2
+        tools: []
+
+  retrieval:
+    type: round_robin
+    max_turns: 10
+    termination_agent: RetrievalAgent
+    agents:
+      - name: RetrievalAgent
+        role: >
+          Answers natural-language questions about LIMO dimension
+          validation status for an offer.  Uses the same deterministic
+          comparators as the incident pipeline so the verdict is
+          repeatable across runs.
+        prompt_file: retrieval.j2
+        tools:
+          - DIAG-ODIN-01
+          - DIAG-MP-CLASSIFY-01
+          - DIAG-IQS-EXTRACT-01
+          - DIAG-CONSOLIDATED-01
+          - DIAG-COMPARE-ODIN-IQS-01
+          - DIAG-COMPARE-THREE-WAY-01
+          - DIAG-COMPARE-MP-WEIGHT-01

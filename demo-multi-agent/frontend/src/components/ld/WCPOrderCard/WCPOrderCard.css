@@ -1,0 +1,236 @@
+/* LD Portable – WCPOrderCard */
+
+.ld-wcp-order-card-root {
+  background: var(--ld-semantic-color-surface, #fff);
+  border-radius: 8px;
+  border: 1px solid var(--ld-semantic-color-separator, #e3e4e5);
+  overflow: hidden;
+}
+
+/* Amends banner */
+.ld-wcp-order-card-amends-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--ld-semantic-color-fill-info-subtle, #e8f0fe);
+  border-bottom: 1px solid var(--ld-semantic-color-border-info, #c2d9f7);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ld-semantic-color-text-info, #1a56db);
+}
+
+.ld-wcp-order-card-amends-icon {
+  flex-shrink: 0;
+}
+
+/* Body */
+.ld-wcp-order-card-body {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/* Left column */
+.ld-wcp-order-card-left {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ld-wcp-order-card-fulfillment-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.ld-wcp-order-card-fulfillment-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ld-wcp-order-card-fulfillment-icon {
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.ld-wcp-order-card-fulfillment-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ld-wcp-order-card-type-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ld-semantic-color-text-subtle, #46474a);
+  line-height: 16px;
+}
+
+.ld-wcp-order-card-location {
+  font-size: 12px;
+  color: var(--ld-semantic-color-text-subtle, #46474a);
+}
+
+.ld-wcp-order-card-status-heading {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ld-semantic-color-text, #2e2f32);
+  line-height: 40px;
+  margin: 0;
+}
+
+.ld-wcp-order-card-seller {
+  font-size: 12px;
+  color: var(--ld-semantic-color-text-subtle, #46474a);
+  margin-left: 74px;
+}
+
+/* Timeline */
+.ld-wcp-order-card-timeline {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+/* Return notices */
+.ld-wcp-order-card-notice {
+  margin-top: 4px;
+}
+
+/* Service details */
+.ld-wcp-order-card-service-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.ld-wcp-order-card-vehicle-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ld-semantic-color-text, #2e2f32);
+  line-height: 20px;
+}
+
+.ld-wcp-order-card-services-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ld-wcp-order-card-service-item {
+  font-size: 14px;
+  color: var(--ld-semantic-color-text-subtle, #46474a);
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ld-wcp-order-card-service-bullet {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ld-semantic-color-text-subtle, #46474a);
+  flex-shrink: 0;
+}
+
+/* Product images */
+.ld-wcp-order-card-products {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.ld-wcp-order-card-product-img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: var(--ld-semantic-color-fill-subtle, #f8f8f8);
+}
+
+/* Right column: actions */
+.ld-wcp-order-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 140px;
+}
+
+/* Rating widget */
+.ld-wcp-order-card-rating-wrap {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ld-wcp-order-card-rating-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.ld-wcp-order-card-rating-stars-interactive {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.ld-wcp-order-card-rating-thanks {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ld-semantic-color-text, #2e2f32);
+  margin: 0;
+}
+
+.ld-wcp-order-card-rating-prompt {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ld-semantic-color-text, #2e2f32);
+  margin: 0;
+}
+
+.ld-wcp-order-card-rating-subtitle {
+  font-size: 13px;
+  color: var(--ld-semantic-color-text-subtle, #46474a);
+  margin: 0;
+}
+
+.ld-wcp-order-card-star-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+/* Footer */
+.ld-wcp-order-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--ld-semantic-color-background-subtle, #f2f3f3);
+}
+
+.ld-wcp-order-card-footer-spacer {
+  flex: 1;
+}
+
+.ld-wcp-order-card-order-total {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ld-semantic-color-text, #2e2f32);
+}

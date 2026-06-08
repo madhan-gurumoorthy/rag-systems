@@ -1,0 +1,147 @@
+@import "./styles/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--surface-0);
+    color: var(--ink-default);
+    font-family: theme("fontFamily.sans");
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--ink-default);
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: theme("boxShadow.focus");
+    border-radius: 6px;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 8px;
+  }
+  *:hover::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+  }
+}
+
+@layer components {
+  .hairline {
+    border-color: var(--hairline);
+  }
+
+  /* Markdown rendering inside assistant bubbles. Inline so
+     `dangerouslySetInnerHTML` content gets sensible defaults without
+     a separate stylesheet. */
+  .md h1,
+  .md h2,
+  .md h3,
+  .md h4 {
+    margin: 14px 0 6px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .md h1 {
+    font-size: 1.125rem;
+  }
+  .md h2 {
+    font-size: 1rem;
+    color: var(--accent-strong);
+  }
+  .md h3 {
+    font-size: 0.9375rem;
+    color: var(--accent);
+  }
+  .md p {
+    margin: 6px 0;
+  }
+  .md ul,
+  .md ol {
+    margin: 6px 0 6px 1.25rem;
+  }
+  .md li {
+    margin: 2px 0;
+  }
+  .md code {
+    background: var(--surface-3);
+    color: var(--accent-strong);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: theme("fontFamily.mono");
+    font-size: 0.8125rem;
+  }
+  .md pre {
+    background: var(--surface-3);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 12px;
+    overflow-x: auto;
+    margin: 8px 0;
+  }
+  .md pre code {
+    background: none;
+    padding: 0;
+    color: var(--ink-default);
+    font-size: 0.8125rem;
+  }
+  .md table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.8125rem;
+  }
+  .md th,
+  .md td {
+    border: 1px solid var(--hairline);
+    padding: 6px 10px;
+    text-align: left;
+  }
+  .md th {
+    background: var(--surface-2);
+    font-weight: 600;
+    color: var(--ink-default);
+  }
+  .md strong {
+    color: var(--ink-default);
+    font-weight: 600;
+  }
+  .md hr {
+    border: none;
+    border-top: 1px solid var(--hairline);
+    margin: 14px 0;
+  }
+  .md blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 6px 10px 6px 12px;
+    color: var(--ink-muted);
+    margin: 8px 0;
+    background: var(--accent-faint);
+    border-radius: 0 6px 6px 0;
+  }
+  .md a {
+    color: var(--accent-strong);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-soft);
+  }
+  .md a:hover {
+    text-decoration-color: var(--accent);
+  }
+}

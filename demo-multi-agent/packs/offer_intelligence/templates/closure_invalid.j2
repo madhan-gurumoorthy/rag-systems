@@ -1,0 +1,27 @@
+CLOSURE SUMMARY
+═══════════════════════════════════════════════════════════
+Offer ID:       {{ offer_id | default(external_ref) }}
+Publish Status: {{ publish_status | default("UNPUBLISHED") }}
+Audit History:  {{ audit_history | default("N/A") }}
+Issue Summary:  Offer wrongly unpublished — invalid reason code(s) detected
+
+Reason Codes Validated: {{ reason_codes_checked | default([]) | join(", ") }}
+
+Analysis:
+Offer {{ offer_id | default(external_ref) }} is UNPUBLISHED but at least one reason
+code is NOT justified by current catalog data. The offer may be incorrectly suppressed.
+
+Affected Component: Catalog Compliance — Offer Publish Status
+Impact: Offer incorrectly suppressed; potential seller revenue impact
+Root Cause: One or more unpublish reason codes are not justified by catalog data
+
+Recommended Actions:
+  1. Review each INVALID reason code and investigate the root cause.
+  2. Apply the appropriate corrective action (re-pricing, logistics update, etc.).
+  3. Monitor offer publish status — it should re-publish automatically after fix.
+  4. Escalate to catalog engineering if offer does not re-publish within 24 hours.
+
+Status: WRONGLY_UNPUBLISHED
+Slack Summary: 🟠 *WRONGLY UNPUBLISHED* — Offer {{ offer_id | default(external_ref) }} | Invalid reason code(s) detected
+👉 Team action required: Investigate and resolve invalid unpublish reason code(s)
+═══════════════════════════════════════════════════════════

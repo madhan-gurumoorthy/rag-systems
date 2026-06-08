@@ -1,0 +1,92 @@
+/* LD Portable – Checkbox */
+/* Checkbox */
+.ld-checkbox-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+  align-items: flex-start;
+  color: var(--ld-semantic-color-input-text-on-fill, #2e2f32);
+  cursor: pointer;
+  display: inline-flex;
+  position: relative;
+}
+.ld-checkbox-label.ld-checkbox-checked, .ld-checkbox-label.ld-checkbox-indeterminate {
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+}
+.ld-checkbox-label.ld-checkbox-disabled {
+  color: var(--ld-semantic-color-input-text-on-fill-disabled, #babbbe);
+  cursor: default;
+}
+
+.ld-checkbox-input {
+  -webkit-appearance: none; 
+  appearance: none;
+  cursor: pointer;
+  height: 1.5rem;
+  position: absolute;
+  width: 1.5rem;
+}
+.ld-checkbox-disabled .ld-checkbox-input {
+  cursor: default;
+}
+
+.ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill, #ffffff);
+  border-radius: 0.125rem;
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-input-border, #2e2f32);
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1.5rem;
+  padding: 0.25rem;
+  pointer-events: none;
+  position: relative;
+  width: 1.5rem;
+  z-index: 1;
+}
+.ld-checkbox-label:hover .ld-checkbox-checkbox, .hover .ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill-hovered, #f1f1f2);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-input-border-hovered, #2e2f32);
+}
+.ld-checkbox-input:focus ~ .ld-checkbox-checkbox, .focus .ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill-hovered, #f1f1f2);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-input-border-focused, #2e2f32);
+}
+.ld-checkbox-label:active .ld-checkbox-checkbox, .active .ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill-pressed, #e3e4e5);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-input-border-pressed, #2e2f32);
+}
+.ld-checkbox-disabled .ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill-disabled, #ffffff) !important;
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-input-border-disabled, #babbbe) !important;
+}
+.ld-checkbox-checked .ld-checkbox-checkbox, .ld-checkbox-indeterminate .ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill-activated, #2e2f32);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-input-border-activated, #2e2f32);
+}
+.ld-checkbox-checked:hover .ld-checkbox-checkbox, .ld-checkbox-checked.hover .ld-checkbox-checkbox, .ld-checkbox-indeterminate:hover .ld-checkbox-checkbox, .ld-checkbox-indeterminate.hover .ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill-activated-hovered, #3a3b3e);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-input-border-activated, #2e2f32);
+}
+.ld-checkbox-checked .ld-checkbox-input:focus ~ .ld-checkbox-checkbox, .ld-checkbox-checked.focus .ld-checkbox-checkbox, .ld-checkbox-indeterminate .ld-checkbox-input:focus ~ .ld-checkbox-checkbox, .ld-checkbox-indeterminate.focus .ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill-activated-hovered, #3a3b3e);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-input-border-activated, #2e2f32);
+}
+.ld-checkbox-checked:active .ld-checkbox-checkbox, .ld-checkbox-checked.active .ld-checkbox-checkbox, .ld-checkbox-indeterminate:active .ld-checkbox-checkbox, .ld-checkbox-indeterminate.active .ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill-activated-pressed, #46474a) !important;
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-input-border-activated, #2e2f32) !important;
+}
+.ld-checkbox-disabled.ld-checkbox-checked .ld-checkbox-checkbox, .ld-checkbox-disabled.ld-checkbox-indeterminate .ld-checkbox-checkbox {
+  background: var(--ld-semantic-color-input-fill-activated-disabled, #babbbe) !important;
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-input-border-activated-disabled, #babbbe) !important;
+}
+.ld-checkbox-checkbox .ld-checkbox-checkboxIcon {
+  fill: var(--ld-semantic-color-input-indicator-activated, #ffffff);
+}
+
+.ld-checkbox-labelText {
+  margin-left: 0.75rem;
+  align-self: center;
+}

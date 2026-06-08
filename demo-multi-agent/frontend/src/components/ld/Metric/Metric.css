@@ -1,0 +1,48 @@
+/* LD Portable – Metric */
+/* Metric */
+.ld-metric-timescope {
+  color: var(--ld-semantic-color-text-subtlest, #74767c);
+  margin-bottom: 0.25rem;
+}
+
+.ld-metric-valueContainer {
+  align-items: baseline;
+  display: flex;
+}
+
+.ld-metric-value {
+  margin-right: 0.25rem;
+  white-space: nowrap;
+}
+
+.ld-metric-unit {
+  white-space: nowrap;
+}
+
+.ld-metric-labelContainer {
+  display: flex;
+}
+.ld-metric-neutral .ld-metric-labelContainer {
+  color: var(--ld-semantic-color-text, #2e2f32);
+}
+.ld-metric-positiveUp .ld-metric-labelContainer {
+  color: var(--ld-semantic-color-text-positive, #2a8703);
+}
+.ld-metric-positiveDown .ld-metric-labelContainer {
+  color: var(--ld-semantic-color-text-positive, #2a8703);
+}
+.ld-metric-negativeUp .ld-metric-labelContainer {
+  color: var(--ld-semantic-color-text-negative, #ea1100);
+}
+.ld-metric-negativeDown .ld-metric-labelContainer {
+  color: var(--ld-semantic-color-text-negative, #ea1100);
+}
+
+.ld-metric-trendIndicator {
+  line-height: 1;
+  margin: 0.125rem 0.25rem 0 0;
+}
+
+.ld-metric-textLabel {
+  color: inherit;
+}

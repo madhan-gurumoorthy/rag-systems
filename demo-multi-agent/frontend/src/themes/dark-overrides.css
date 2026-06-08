@@ -1,0 +1,68 @@
+/**
+ * Dark color-mode overrides.
+ *
+ * Layered on top of any Living Design brand theme. When
+ * `<html data-color-mode="dark">` is set (by `src/utils/ColorMode`),
+ * these declarations re-point surface, text, and border semantic
+ * tokens to their dark equivalents while the brand theme (Sparky and
+ * friends) keeps owning its action/brand colors.
+ *
+ * Selector strategy: `[data-color-mode="dark"]` is set on `<html>`,
+ * which is the same element that carries `[data-ld-theme]`. The
+ * combined selector `[data-color-mode="dark"]` therefore sits at the
+ * same specificity tier as the brand-theme rules but loads AFTER them
+ * via `src/themes/index.css`, so the cascade wins for every overridden
+ * token. Components that read `--ld-semantic-color-text` (etc.) get the
+ * dark value with no component-level changes.
+ *
+ * Only re-point tokens that genuinely shift between light and dark.
+ * Brand fill, action fill, brand text, and accent palettes are
+ * intentionally left alone so the Sparky identity persists in dark
+ * mode.
+ */
+
+[data-color-mode="dark"] {
+  /* ── Page + surface backgrounds ─────────────────────────────── */
+  --ld-semantic-color-background: #0e0e10;
+  --ld-semantic-color-background-subtle: #171819;
+  --ld-semantic-color-background-inverse: #ffffff;
+
+  --ld-semantic-color-surface-overlay: #1c1d1f;
+  --ld-semantic-color-surface-overlay-inverse: #ffffff;
+  --ld-semantic-color-surface-subtle: #232325;
+  --ld-semantic-color-surface-subtle-hovered: #2e2f32;
+  --ld-semantic-color-surface-subtle-focused: #2e2f32;
+  --ld-semantic-color-surface-subtle-pressed: #3a3b3e;
+  --ld-semantic-color-surface-hovered: #232325;
+  --ld-semantic-color-surface-focused: #232325;
+  --ld-semantic-color-surface-pressed: #2e2f32;
+
+  /* ── Body + helper text ─────────────────────────────────────── */
+  --ld-semantic-color-text: #f1f1f2;
+  --ld-semantic-color-text-subtle: #d5d6d8;
+  --ld-semantic-color-text-subtlest: #babbbe;
+  --ld-semantic-color-text-inverse: #171819;
+  --ld-semantic-color-text-disabled: #5d5e63;
+
+  /* ── Borders ────────────────────────────────────────────────── */
+  --ld-semantic-color-border: #d5d6d8;
+  --ld-semantic-color-border-subtle: #9e9fa3;
+  --ld-semantic-color-border-subtlest: rgba(255, 255, 255, 0.16);
+  --ld-semantic-color-border-disabled: #46474a;
+  --ld-semantic-color-border-inverse: #171819;
+}
+
+/**
+ * Page body backdrop.
+ *
+ * `src/styles/index.css` paints the `body` background implicitly via
+ * font/color rules only — the body inherits whatever the browser
+ * default is. In light mode that's effectively white; in dark mode the
+ * un-painted body bleeds through any non-card region. Pin the body
+ * background to the active semantic token so transitions feel
+ * intentional.
+ */
+[data-color-mode="dark"] body {
+  background: var(--ld-semantic-color-background);
+  color: var(--ld-semantic-color-text);
+}

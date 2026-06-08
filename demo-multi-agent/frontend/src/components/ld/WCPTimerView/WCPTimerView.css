@@ -1,0 +1,41 @@
+/* LD Portable – WCPTimerView */
+.ld-wcp-timerview-timer {
+  display: inline-flex;
+  padding: 0 var(--ld-primitive-scale-space-50, 4px);
+  justify-content: center;
+  align-items: center;
+  gap: var(--ld-primitive-scale-space-50, 4px);
+  border-radius: var(--ld-primitive-scale-borderradius-25, 4px);
+  min-width: 48px;
+  text-align: center;
+  font-size: var(--ld-semantic-font-body-medium-size, 16px);
+  font-weight: var(--ld-semantic-font-body-medium-weight-alt, 700);
+  line-height: var(--ld-semantic-font-body-medium-lineheight, 24px);
+}
+
+.ld-wcp-timerview-small {
+  font-size: var(--ld-semantic-font-body-small-size, 14px);
+  line-height: var(--ld-semantic-font-body-small-lineheight, 20px);
+}
+
+.ld-wcp-timerview-waiting {
+  background: var(--ld-semantic-color-fill-brand-subtle, #D9E8FF);
+  color: var(--ld-semantic-color-text-onfill-brand-subtle, #114AB6);
+}
+
+.ld-wcp-timerview-warning {
+  background: var(--ld-semantic-color-fill-warning, #FFC220);
+  color: var(--ld-semantic-color-text-onfill-warning, #2E2F32);
+}
+
+.ld-wcp-timerview-expiring {
+  background: var(--ld-semantic-color-fill-negative, #C5221F);
+  color: var(--ld-semantic-color-text-onfill-negative, #FFFFFF);
+}
+
+.ld-wcp-timerview-label {
+  font-size: var(--ld-semantic-font-body-small-size, 14px);
+  font-weight: var(--ld-semantic-font-body-small-weight-default, 400);
+  line-height: var(--ld-semantic-font-body-small-lineheight, 20px);
+  color: var(--ld-semantic-color-text, #2E2F32);
+}

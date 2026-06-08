@@ -1,0 +1,60 @@
+LIMO DIMENSION VALIDATION — CLOSURE SUMMARY
+═══════════════════════════════════════════
+
+Verdict: PASS
+Offer ID:        {{ offer_id | default(external_ref) }}
+Seller ID:       {{ seller_id | default("—", true) }}
+Seller Type:     {{ seller_type | default("—", true) }}
+Primary GTIN:    {{ primary_gtin | default("—", true) }}
+{% if matched_gtin and matched_gtin != primary_gtin %}
+Matched GTIN:    {{ matched_gtin }}  (alternate — primary did not match)
+{% endif %}
+{% if iqs_gtins_total and iqs_gtins_total | int > 1 %}
+GTINs Checked:   {{ iqs_gtins_checked | default([]) | length }} of {{ iqs_gtins_total }}
+{% endif %}
+
+ODIN Dimensions:
+  - Height: {{ odin_height | default("—", true) }} IN
+  - Length: {{ odin_length | default("—", true) }} IN
+  - Width:  {{ odin_width  | default("—", true) }} IN
+  - Weight: {{ odin_weight | default("—", true) }} LB
+
+{% if iqs_gold_height or iqs_gold_length or iqs_gold_width or iqs_gold_weight %}
+IQS TI — GOLD Record:
+  - Height: {{ iqs_gold_height | default("—", true) }} IN
+  - Length: {{ iqs_gold_length | default("—", true) }} IN
+  - Width:  {{ iqs_gold_width  | default("—", true) }} IN
+  - Weight: {{ iqs_gold_weight | default("—", true) }} LB
+{% if iqs_gold_timestamp %}  - Last Updated: {{ iqs_gold_timestamp }}{% endif %}
+{% if iqs_gold_capture_method %}  - Capture Method: {{ iqs_gold_capture_method }}{% endif %}
+{% elif iqs_supplier_height or iqs_supplier_length or iqs_supplier_width or iqs_supplier_weight %}
+IQS TI — Supplier Record:
+  - Height: {{ iqs_supplier_height | default("—", true) }} IN
+  - Length: {{ iqs_supplier_length | default("—", true) }} IN
+  - Width:  {{ iqs_supplier_width  | default("—", true) }} IN
+  - Weight: {{ iqs_supplier_weight | default("—", true) }} LB
+{% if iqs_supplier_timestamp %}  - Last Updated: {{ iqs_supplier_timestamp }}{% endif %}
+{% if iqs_supplier_capture_method %}  - Capture Method: {{ iqs_supplier_capture_method }}{% endif %}
+{% endif %}
+
+Consolidated API productPackageDimensions:
+  - Height: {{ consolidated_height | default("—", true) }} IN
+  - Length: {{ consolidated_length | default("—", true) }} IN
+  - Width:  {{ consolidated_width  | default("—", true) }} IN
+  - Weight: {{ consolidated_weight | default("—", true) }} LB
+
+{% if selection_explanation %}
+Dimension Source Selection:
+{% for exp in selection_explanation -%}
+  {{ exp.field | upper }}:
+    Selected: {{ exp.selected_value }} ({{ exp.selected_source }})
+    Reason: {{ exp.reason }}
+{% endfor %}
+{% endif %}
+
+Result: ODIN, IQS TI, and Eligibility Consolidated API dimensions
+are in sync.  The selected values are correctly persisted in LIMO
+and served downstream.
+
+Status: RESOLVED
+═══════════════════════════════════════════

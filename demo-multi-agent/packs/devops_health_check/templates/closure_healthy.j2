@@ -1,0 +1,16 @@
+DEVOPS HEALTH CHECK — CLOSURE SUMMARY
+═══════════════════════════════════════════
+
+Verdict: HEALTHY
+Incident: {{ incident_number }}
+Host: {{ hostname }}
+Service: {{ service_name }}
+
+Observations:
+  - Ping:     {{ ping_status | default("up") }}
+  - CPU pct:  {{ cpu_percent | default("normal") }}
+
+Action Taken: No action required — host responds and CPU within threshold.
+
+Status: RESOLVED
+═══════════════════════════════════════════

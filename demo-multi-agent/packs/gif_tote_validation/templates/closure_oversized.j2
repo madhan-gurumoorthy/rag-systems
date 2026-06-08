@@ -1,0 +1,33 @@
+CLOSURE SUMMARY
+═══════════════════════════════════════════
+
+Issue Summary: Item dimensions exceed standard GIF tote limits
+Analysis: Automated tote validation for {{ incident_number }}. Validated UPC/WIN and store #{{ store_number }} combination. Retrieved item dimensions from GIF API (GTIN: {{ gtin }}). Item dimensions ({{ height }} × {{ width }} × {{ depth }} {{ dim_uom }}, {{ weight }} {{ weight_uom }}) exceed standard tote limits (10.5 × 13.0 × 20.5 IN, 34.55 LB). {{ exceeded_reason }}.
+Affected Component: Fulfillment Dispense — GIF Picking
+Impact: Item incorrectly routed in pick walk due to dimension mismatch
+Root Cause: Item dimensions on file exceed tote constraints
+Issue Category: Incorrect Dimensions
+Dimension Source: {{ dimension_source }}
+
+Item Details:
+  Product: {{ product_name }} (Item #{{ item_id }})
+  GTIN: {{ gtin }}
+  Store: #{{ store_number }}
+  Dimension Source: {{ dimension_source }}
+  GIF Dimensions: {{ height }} × {{ width }} × {{ depth }} {{ dim_uom }}, {{ weight }} {{ weight_uom }}
+  Tote Limits: 10.5 × 13.0 × 20.5 IN, 34.55 LB
+  Verdict: OVERSIZED — {{ exceeded_reason }}
+  Merchant Contact: {{ merchant_email }}
+
+Recommended Actions:
+  1. Send merchant outreach email to {{ merchant_email }} requesting dimension verification
+  2. Add work notes to incident with tote validation results
+  3. Set ticket to Pending — Awaiting Merchant Response
+  4. If merchant confirms correct → route to OPS - eComFulfillment - Picking
+  5. If dims need update & Golden → contact SSOT team via #ssot-gif
+  6. If dims need update & Supplier → update in iSAM
+
+Status: PENDING_REVIEW
+Slack Summary: 🔴 *OVERSIZED* — {{ exceeded_reason }}
+👉 Team action required: Review findings and proceed with merchant outreach to {{ merchant_email }}
+═══════════════════════════════════════════

@@ -1,0 +1,81 @@
+/**
+ * Data Ventures Theme
+ * Auto-generated from Airtable — do not edit manually
+ */
+
+[data-ld-theme="Data Ventures"] {
+  --ld-primitive-color-purple-5: #f5f3f9;
+  --ld-primitive-color-purple-10: #ebe8f3;
+  --ld-primitive-color-purple-20: #d9d3e8;
+  --ld-primitive-color-purple-30: #c7bfde;
+  --ld-primitive-color-purple-40: #b5abd3;
+  --ld-primitive-color-purple-50: #a69bcf;
+  --ld-primitive-color-purple-60: #978acb;
+  --ld-primitive-color-purple-70: #897ac7;
+  --ld-primitive-color-purple-80: #7b69c2;
+  --ld-primitive-color-purple-90: #6e58bd;
+  --ld-primitive-color-purple-100: #6245b7;
+  --ld-primitive-color-purple-110: #553aa8;
+  --ld-primitive-color-purple-120: #482e99;
+  --ld-primitive-color-purple-130: #3c228a;
+  --ld-primitive-color-purple-140: #311a79;
+  --ld-primitive-color-purple-150: #261169;
+  --ld-primitive-color-purple-160: #1c0859;
+  --ld-primitive-color-purple-170: #13014a;
+  --ld-primitive-color-purple-180: #0c002f;
+
+  --ld-semantic-color-action-fill-primary: #6245b7;
+  --ld-semantic-color-action-fill-primary-focused: #553aa8;
+  --ld-semantic-color-action-fill-primary-hovered: #553aa8;
+  --ld-semantic-color-action-fill-primary-pressed: #3c228a;
+  --ld-semantic-color-border-activated: #6245b7;
+  --ld-semantic-color-border-brand: #6245b7;
+  --ld-semantic-color-border-brand-bold: #1c0859;
+  --ld-semantic-color-fill-activated: #6245b7;
+  --ld-semantic-color-fill-activated-focused: #553aa8;
+  --ld-semantic-color-fill-activated-hovered: #553aa8;
+  --ld-semantic-color-fill-activated-pressed: #3c228a;
+  --ld-semantic-color-fill-activated-subtle: #f5f3f9;
+  --ld-semantic-color-fill-activated-subtle-focused: #ebe8f3;
+  --ld-semantic-color-fill-activated-subtle-hovered: #ebe8f3;
+  --ld-semantic-color-fill-activated-subtle-pressed: #d9d3e8;
+  --ld-semantic-color-fill-brand: #6245b7;
+  --ld-semantic-color-fill-brand-bold: #1c0859;
+  --ld-semantic-color-fill-brand-subtle: #ebe8f3;
+  --ld-semantic-color-fill-brand-subtle-focused: #d5d6d8;
+  --ld-semantic-color-fill-brand-subtle-hovered: #e3e4e5;
+  --ld-semantic-color-fill-brand-subtle-pressed: #46474a;
+  --ld-semantic-color-pageNav-fill-activated: #f5f3f9;
+  --ld-semantic-color-pageNav-fill-activated-focused: #ebe8f3;
+  --ld-semantic-color-pageNav-fill-activated-hovered: #ebe8f3;
+  --ld-semantic-color-pageNav-fill-activated-pressed: #d9d3e8;
+  --ld-semantic-color-pageNav-fill-focused: #f5f3f9;
+  --ld-semantic-color-pageNav-fill-hovered: #f5f3f9;
+  --ld-semantic-color-pageNav-fill-pressed: #ebe8f3;
+  --ld-semantic-color-pageNav-indicator-activated: #6245b7;
+  --ld-semantic-color-pageNav-indicator-activated-focused: #6245b7;
+  --ld-semantic-color-pageNav-indicator-activated-hovered: #6245b7;
+  --ld-semantic-color-pageNav-indicator-activated-pressed: #6245b7;
+  --ld-semantic-color-pageNav-indicator-focused: #d9d3e8;
+  --ld-semantic-color-pageNav-indicator-hovered: #d9d3e8;
+  --ld-semantic-color-pageNav-indicator-pressed: #c7bfde;
+  --ld-semantic-color-surface-activated: #f8f8f8;
+  --ld-semantic-color-surface-activated-focused: #ebe8f3;
+  --ld-semantic-color-surface-activated-hovered: #ebe8f3;
+  --ld-semantic-color-surface-activated-pressed: #d9d3e8;
+  --ld-semantic-color-surface-brand: #ebe8f3;
+  --ld-semantic-color-switch-fill-activated: #6245b7;
+  --ld-semantic-color-switch-fill-activated-focused: #3c228a;
+  --ld-semantic-color-switch-fill-activated-hovered: #3c228a;
+  --ld-semantic-color-switch-fill-activated-pressed: #1c0859;
+  --ld-semantic-color-switch-fill-focused: #686a70;
+  --ld-semantic-color-switch-fill-hovered: #686a70;
+  --ld-semantic-color-switch-fill-pressed: #5d5e63;
+  --ld-semantic-color-text-activated: #2e2f32;
+  --ld-semantic-color-text-brand: #6245b7;
+  --ld-semantic-color-text-brand-bold: #1c0859;
+  --ld-semantic-color-text-onFill-brand-subtle: #553aa8;
+  --ld-semantic-color-text-onFill-brand-subtle-focused: #46474a;
+  --ld-semantic-color-text-onFill-brand-subtle-hovered: #e3e4e5;
+  --ld-semantic-color-text-onFill-brand-subtle-pressed: #2e2f32;
+}

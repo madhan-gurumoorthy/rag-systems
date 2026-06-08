@@ -1,0 +1,30 @@
+# Policy Configuration — DevOps Health Check (toy pack)
+#
+# Restart operations require approval.
+
+approvals:
+  required_for_cards: []
+  required_for_tools:
+    - ACT-RESTART-01
+  approval_channel: concord
+  concord_entry_point: "devops-restart-approval"
+  timeout_minutes: 15
+  ad_group: DevOps-Approvers
+
+blast_radius:
+  max_batch_size: 1
+  limits:
+    max_restarts_per_hour: 10
+
+permitted_actions:
+  - "Read-only health checks (CPU, ping)"
+  - "Notification posts to on-call channel"
+  - "Service restart (requires approval)"
+
+denied_actions:
+  - "Modifying production data"
+  - "Deleting services or hosts"
+
+feature_flags:
+  enable_auto_restart: false
+  enable_notifications: true

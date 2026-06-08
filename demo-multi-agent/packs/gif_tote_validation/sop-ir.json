@@ -1,0 +1,834 @@
+{
+  "metadata": {
+    "title": "GIF Tote Validation \u2013 Autonomous Incident Resolution System",
+    "owner_team": "MerchantOps - Item Setup/Maintenance",
+    "version": "1.0.0",
+    "systems": [
+      "ServiceNow",
+      "Uber Keys",
+      "GIF API",
+      "IQS API",
+      "Uber API",
+      "iSAM",
+      "Slack",
+      "Email"
+    ],
+    "tags": [
+      "Tags: GIF",
+      "Tote Validation",
+      "Oversized Item",
+      "Merchant Outreach",
+      "SSOT Update",
+      "Automated Routing",
+      "Incident Number",
+      "Store ID",
+      "GTIN",
+      "Gold Status"
+    ]
+  },
+  "intake": {
+    "required_inputs": [
+      "incident_number",
+      "original_short_description",
+      "description_body",
+      "upc_win",
+      "store_number",
+      "assignment_group",
+      "ticket_state",
+      "work_notes",
+      "comments"
+    ]
+  },
+  "diagnostics": [
+    {
+      "id": "DIAG-TICKET-01",
+      "depends_on": [],
+      "purpose": "Detect GIF tote-related incidents and extract structured form data",
+      "inputs": [
+        "incident_number",
+        "original_short_description",
+        "description_body",
+        "upc_win",
+        "store_number",
+        "assignment_group",
+        "ticket_state",
+        "work_notes",
+        "comments"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "INCIDENT_MATCHED",
+          "INCIDENT_NOT_MATCHED",
+          "PARSE_FAILURE"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-UBERKEYS-01",
+      "depends_on": [
+        "DIAG-TICKET-01"
+      ],
+      "purpose": "Resolve GTIN from UPC or Walmart item number (WIN) via Uber Keys (UPC_TO_GTIN, SI_TO_GTIN)",
+      "inputs": [
+        "incident_number",
+        "original_short_description",
+        "description_body",
+        "upc_win",
+        "store_number",
+        "assignment_group",
+        "ticket_state",
+        "work_notes",
+        "comments"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "GTIN_FOUND",
+          "GTIN_NOT_FOUND"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-API-01",
+      "depends_on": [
+        "DIAG-UBERKEYS-01"
+      ],
+      "purpose": "Retrieve item dimensions from GIF API",
+      "inputs": [
+        "incident_number",
+        "original_short_description",
+        "description_body",
+        "upc_win",
+        "store_number",
+        "assignment_group",
+        "ticket_state",
+        "work_notes",
+        "comments"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "DATA_FOUND",
+          "DATA_NOT_FOUND",
+          "API_ERROR"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-API-02",
+      "depends_on": [
+        "DIAG-API-01"
+      ],
+      "purpose": "Determine Gold status and product info from IQS API",
+      "inputs": [
+        "incident_number",
+        "original_short_description",
+        "description_body",
+        "upc_win",
+        "store_number",
+        "assignment_group",
+        "ticket_state",
+        "work_notes",
+        "comments"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "GOLD",
+          "NOT_GOLD",
+          "API_ERROR"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-API-03",
+      "depends_on": [
+        "DIAG-API-02"
+      ],
+      "purpose": "Retrieve supplier dimensions from Uber API (if not Gold)",
+      "inputs": [
+        "incident_number",
+        "original_short_description",
+        "description_body",
+        "upc_win",
+        "store_number",
+        "assignment_group",
+        "ticket_state",
+        "work_notes",
+        "comments"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "DATA_FOUND",
+          "DATA_NOT_FOUND",
+          "API_ERROR"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-LOGIC-01",
+      "depends_on": [],
+      "purpose": "Validate item dimensions against tote constraints",
+      "inputs": [
+        "incident_number",
+        "original_short_description",
+        "description_body",
+        "upc_win",
+        "store_number",
+        "assignment_group",
+        "ticket_state",
+        "work_notes",
+        "comments"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "FITS_TOTE",
+          "OVERSIZED"
+        ]
+      }
+    }
+  ],
+  "decision_flowchart": "\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n                    \u2502   START: Incident    \u2502\n                    \u2502   Detected in SNOW   \u2502\n                    \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n                               \u2502\n                    \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n                    \u2502  DIAG-TICKET-01:      \u2502\n                    \u2502  Parse Incident     \u2502\n                    \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n                          \u250c\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2510\n                     MATCH \u2502         \u2502 NO MATCH\n                          \u25bc         \u25bc\n                    \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510  \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n                    \u2502DIAG-UBERKEYS-01\u2502  \u2502 RBK-GIF-05 \u2502\n                    \u2502 UPC/SI to GTIN \u2502  \u2502 Escalate   \u2502\n                    \u2514\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2518  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n                         \u2502\n                    \u250c\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2510\n                    \u2502 DIAG-API-01\u2502\n                    \u2502 GIF API   \u2502\n                    \u2514\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2518\n                         \u2502\n                    \u250c\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2510\n                    \u2502 DIAG-API-02\u2502\n                    \u2502 IQS API   \u2502\n                    \u2514\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2518\n                         \u2502\n                    \u250c\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2510\n                    \u2502 DIAG-API-03\u2502\n                    \u2502 Uber API  \u2502\n                    \u2514\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2518\n                         \u2502\n                    \u250c\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2510\n                    \u2502 DIAG-LOGIC-01\u2502\n                    \u2502 Tote Fit  \u2502\n                    \u2514\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2518\n                         \u2502\n          \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n          \u2502                              \u2502\n   FITS_TOTE                      OVERSIZED\n          \u2502                              \u2502\n    \u250c\u2500\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2510               \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n    \u2502 RBK-GIF-01\u2502               \u2502 Merchant Outreach\u2502\n    \u2502 Auto-Route\u2502               \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n    \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518                        \u2502\n \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n                                \u2502 Merchant Reply \u2502\n                                \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n                        \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n                        \u2502                              \u2502\n          Confirmed Correct Dimensions      Confirmed Update Needed\n                        \u2502                              \u2502\n                \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510             \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n                \u2502 RBK-GIF-02    \u2502             \u2502 IsGold?          \u2502\n                \u2502 Route to GIF  \u2502             \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n                \u2502 Picking Team  \u2502                     \u2502\n                \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518             \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n                                            \u2502 TRUE          \u2502\n                                            \u2502 RBK-GIF-03    \u2502\n                                            \u2502 SSOT Update   \u2502\n                                            \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n                                            \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n                                            \u2502 FALSE         \u2502\n                                            \u2502 RBK-GIF-04    \u2502\n                                            \u2502 iSAM Update   \u2502\n                                            \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518",
+  "decision_rules": [
+    {
+      "when": {
+        "all": [
+          "DIAG-LOGIC-01 = FITS_TOTE"
+        ],
+        "any": [],
+        "expressions": []
+      },
+      "then_runbook": "RBK-GIF-01"
+    },
+    {
+      "when": {
+        "all": [
+          "DIAG-LOGIC-01 = OVERSIZED",
+          "Merchant confirms dimensions correct"
+        ],
+        "any": [],
+        "expressions": []
+      },
+      "then_runbook": "RBK-GIF-02"
+    },
+    {
+      "when": {
+        "all": [
+          "DIAG-LOGIC-01 = OVERSIZED",
+          "Merchant confirms dimensions need update",
+          "isGold = TRUE"
+        ],
+        "any": [],
+        "expressions": []
+      },
+      "then_runbook": "RBK-GIF-03"
+    },
+    {
+      "when": {
+        "all": [
+          "DIAG-LOGIC-01 = OVERSIZED",
+          "Merchant confirms dimensions need update",
+          "isGold = FALSE"
+        ],
+        "any": [],
+        "expressions": []
+      },
+      "then_runbook": "RBK-GIF-04"
+    },
+    {
+      "when": {
+        "all": [
+          "ELSE / API_ERROR / PARSE_FAILURE / Missing data"
+        ],
+        "any": [],
+        "expressions": []
+      },
+      "then_runbook": "RBK-GIF-05"
+    }
+  ],
+  "runbooks": [
+    {
+      "id": "RBK-GIF-01",
+      "depends_on": [
+        "DECISION-1"
+      ],
+      "name": "DIAG-LOGIC-01 = FITS_TOTE",
+      "card_id": "GIF-01",
+      "tags": {
+        "issue_tag": "diag_logic_01_fits_tote",
+        "fix_tag": "gif_01"
+      },
+      "description": "DIAG-LOGIC-01 = FITS_TOTE",
+      "actions": [
+        {
+          "id": "ACT-GIF-01-1",
+          "depends_on": [],
+          "description": "Log validation result in work notes (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-01-2",
+          "depends_on": [
+            "RBK-GIF-01:step-1"
+          ],
+          "description": "Attach dimension summary (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-01-3",
+          "depends_on": [
+            "RBK-GIF-01:step-2"
+          ],
+          "description": "If ticket state = WIP, clear Assignee (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-01-4",
+          "depends_on": [
+            "RBK-GIF-01:step-3"
+          ],
+          "description": "Change Assignment Group to \"OPS - eComFulfillment - Picking\" (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-01-5",
+          "depends_on": [
+            "RBK-GIF-01:step-4"
+          ],
+          "description": "Add customer comment (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-01-6",
+          "depends_on": [
+            "RBK-GIF-01:step-5"
+          ],
+          "description": "Save ticket (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        }
+      ],
+      "verifications": [
+        {
+          "id": "VER-GIF-01-1",
+          "description": "Ticket assigned to GIF Picking Team; work notes contain validation logs; customer comment visible"
+        }
+      ]
+    },
+    {
+      "id": "RBK-GIF-02",
+      "depends_on": [
+        "DECISION-2"
+      ],
+      "name": "Merchant confirms oversized item dimensions are correct",
+      "card_id": "GIF-02",
+      "tags": {
+        "issue_tag": "merchant_confirms_oversized_item_dimensions_are",
+        "fix_tag": "gif_02"
+      },
+      "description": "Merchant confirms oversized item dimensions are correct",
+      "actions": [
+        {
+          "id": "ACT-GIF-02-1",
+          "depends_on": [],
+          "description": "Log merchant confirmation in work notes (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-02-2",
+          "depends_on": [
+            "RBK-GIF-02:step-1"
+          ],
+          "description": "Follow RBK-GIF-01 steps to route ticket to GIF Picking Team",
+          "tool_id": "",
+          "params": {}
+        }
+      ],
+      "verifications": [
+        {
+          "id": "VER-GIF-02-1",
+          "description": "Ticket reassigned to GIF Picking Team; confirmation logged"
+        }
+      ]
+    },
+    {
+      "id": "RBK-GIF-03",
+      "depends_on": [
+        "DECISION-3"
+      ],
+      "name": "Merchant confirms dimension update needed and item is Gold",
+      "card_id": "GIF-03",
+      "tags": {
+        "issue_tag": "merchant_confirms_dimension_update_needed_and",
+        "fix_tag": "gif_03"
+      },
+      "description": "Merchant confirms dimension update needed and item is Gold",
+      "actions": [
+        {
+          "id": "ACT-GIF-03-1",
+          "depends_on": [],
+          "description": "Post standardized request to #ssot-gif Slack channel (ACT-SLACK-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-03-2",
+          "depends_on": [
+            "RBK-GIF-03:step-1"
+          ],
+          "description": "Set ticket state to Pending with reason \"Awaiting SSOT Dimension Update\" (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-03-3",
+          "depends_on": [
+            "RBK-GIF-03:step-2"
+          ],
+          "description": "Monitor Slack thread for SSOT confirmation (ACT-MON-",
+          "tool_id": "DIAG-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-03-4",
+          "depends_on": [
+            "RBK-GIF-03:step-3"
+          ],
+          "description": "On confirmation, log in work notes, inform requester, resolve ticket (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        }
+      ],
+      "verifications": [
+        {
+          "id": "VER-GIF-03-1",
+          "description": "Slack post successful; ticket state Pending; SSOT confirmation received and logged"
+        }
+      ]
+    },
+    {
+      "id": "RBK-GIF-04",
+      "depends_on": [
+        "DECISION-4"
+      ],
+      "name": "Merchant confirms dimension update needed and item is Supplier (not Gold)",
+      "card_id": "GIF-04",
+      "tags": {
+        "issue_tag": "merchant_confirms_dimension_update_needed_and",
+        "fix_tag": "gif_04"
+      },
+      "description": "Merchant confirms dimension update needed and item is Supplier (not Gold)",
+      "actions": [
+        {
+          "id": "ACT-GIF-04-1",
+          "depends_on": [],
+          "description": "Update dimensions in iSAM UI/API (ACT-ISAM-",
+          "tool_id": "QRY-ISAM-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-04-2",
+          "depends_on": [
+            "RBK-GIF-04:step-1"
+          ],
+          "description": "Log update in work notes (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-04-3",
+          "depends_on": [
+            "RBK-GIF-04:step-2"
+          ],
+          "description": "Inform requester and resolve ticket (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        }
+      ],
+      "verifications": [
+        {
+          "id": "VER-GIF-04-1",
+          "description": "iSAM updated with new dimensions; ticket resolved with notes"
+        }
+      ]
+    },
+    {
+      "id": "RBK-GIF-05",
+      "depends_on": [],
+      "name": "API failures, parse failures, missing critical data, or other exceptions",
+      "card_id": "GIF-05",
+      "tags": {
+        "issue_tag": "api_failures_parse_failures_missing_critical_data",
+        "fix_tag": "gif_05"
+      },
+      "description": "API failures, parse failures, missing critical data, or other exceptions",
+      "actions": [
+        {
+          "id": "ACT-GIF-05-1",
+          "depends_on": [],
+          "description": "Log error and context in work notes (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-05-2",
+          "depends_on": [
+            "RBK-GIF-05:step-1"
+          ],
+          "description": "Set ticket state to Pending with reason \"Manual Review Required\" (ACT-SNOW-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        },
+        {
+          "id": "ACT-GIF-05-3",
+          "depends_on": [
+            "RBK-GIF-05:step-2"
+          ],
+          "description": "Notify MerchantOps L2 team via email/Slack (ACT-COMM-",
+          "tool_id": "QRY-TICKET-01",
+          "params": {}
+        }
+      ],
+      "verifications": [
+        {
+          "id": "VER-GIF-05-1",
+          "description": "Ticket flagged for manual review; notification sent"
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "id": "DIAG-TICKET-01",
+      "description": "Detect GIF tote-related incidents and extract structured form data"
+    },
+    {
+      "id": "DIAG-UBERKEYS-01",
+      "description": "Resolve GTIN from UPC or Walmart item number (WIN) via Uber Keys (UPC_TO_GTIN, SI_TO_GTIN)"
+    },
+    {
+      "id": "DIAG-API-01",
+      "description": "Retrieve item dimensions from GIF API"
+    },
+    {
+      "id": "DIAG-API-02",
+      "description": "Determine Gold status and product info from IQS API"
+    },
+    {
+      "id": "DIAG-API-03",
+      "description": "Retrieve supplier dimensions from Uber API (if not Gold)"
+    },
+    {
+      "id": "DIAG-LOGIC-01",
+      "description": "Validate item dimensions against tote constraints"
+    },
+    {
+      "id": "DIAG-TICKET-01",
+      "description": "keywords | `GET /api/wms/incident/list?filter=assignment_group=MerchantOps - Item Setup/Maintenance^stateIN1,2^short_descriptionLIKEincorrect dimensions` |"
+    },
+    {
+      "id": "QRY-TICKET-01",
+      "description": ""
+    },
+    {
+      "id": "QRY-GIF-01",
+      "description": ""
+    },
+    {
+      "id": "QRY-IQS-01",
+      "description": ""
+    },
+    {
+      "id": "QRY-UBER01",
+      "description": ""
+    },
+    {
+      "id": "QRY-ISAM-01",
+      "description": ""
+    }
+  ],
+  "dependency_graph": {
+    "edges": [
+      {
+        "from": "DIAG-TICKET-01",
+        "to": "DIAG-UBERKEYS-01",
+        "type": "sequential"
+      },
+      {
+        "from": "DIAG-UBERKEYS-01",
+        "to": "DIAG-API-01",
+        "type": "sequential"
+      },
+      {
+        "from": "DIAG-API-01",
+        "to": "DIAG-API-02",
+        "type": "sequential"
+      },
+      {
+        "from": "DIAG-API-02",
+        "to": "DIAG-API-03",
+        "type": "sequential"
+      },
+      {
+        "from": "DIAG-LOGIC-01",
+        "to": "DECISION-1",
+        "type": "evaluation"
+      },
+      {
+        "from": "DECISION-1",
+        "to": "RBK-GIF-01",
+        "type": "routing"
+      },
+      {
+        "from": "DIAG-LOGIC-01",
+        "to": "DECISION-2",
+        "type": "evaluation"
+      },
+      {
+        "from": "DECISION-2",
+        "to": "RBK-GIF-02",
+        "type": "routing"
+      },
+      {
+        "from": "DIAG-LOGIC-01",
+        "to": "DECISION-3",
+        "type": "evaluation"
+      },
+      {
+        "from": "DECISION-3",
+        "to": "RBK-GIF-03",
+        "type": "routing"
+      },
+      {
+        "from": "DIAG-LOGIC-01",
+        "to": "DECISION-4",
+        "type": "evaluation"
+      },
+      {
+        "from": "DECISION-4",
+        "to": "RBK-GIF-04",
+        "type": "routing"
+      },
+      {
+        "from": "DIAG-TICKET-01",
+        "to": "DECISION-5",
+        "type": "evaluation"
+      },
+      {
+        "from": "DIAG-API-03",
+        "to": "DECISION-5",
+        "type": "evaluation"
+      },
+      {
+        "from": "DIAG-LOGIC-01",
+        "to": "DECISION-5",
+        "type": "evaluation"
+      },
+      {
+        "from": "DECISION-5",
+        "to": "RBK-GIF-05 (Escalate to Manual)",
+        "type": "routing"
+      },
+      {
+        "from": "RBK-GIF-01:step-1",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-01:step-1",
+        "to": "RBK-GIF-01:step-2",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-01:step-2",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-01:step-2",
+        "to": "RBK-GIF-01:step-3",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-01:step-3",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-01:step-3",
+        "to": "RBK-GIF-01:step-4",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-01:step-4",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-01:step-4",
+        "to": "RBK-GIF-01:step-5",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-01:step-5",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-01:step-5",
+        "to": "RBK-GIF-01:step-6",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-01:step-6",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-02:step-1",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-02:step-1",
+        "to": "RBK-GIF-02:step-2",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-03:step-1",
+        "to": "ACT-SLACK-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-03:step-1",
+        "to": "RBK-GIF-03:step-2",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-03:step-2",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-03:step-2",
+        "to": "RBK-GIF-03:step-3",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-03:step-3",
+        "to": "ACT-MON-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-03:step-3",
+        "to": "RBK-GIF-03:step-4",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-03:step-4",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-04:step-1",
+        "to": "ACT-ISAM-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-04:step-1",
+        "to": "RBK-GIF-04:step-2",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-04:step-2",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-04:step-2",
+        "to": "RBK-GIF-04:step-3",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-04:step-3",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-05:step-1",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-05:step-1",
+        "to": "RBK-GIF-05:step-2",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-05:step-2",
+        "to": "ACT-SNOW-",
+        "type": "executes"
+      },
+      {
+        "from": "RBK-GIF-05:step-2",
+        "to": "RBK-GIF-05:step-3",
+        "type": "sequential"
+      },
+      {
+        "from": "RBK-GIF-05:step-3",
+        "to": "ACT-COMM-",
+        "type": "executes"
+      }
+    ],
+    "entry_points": [
+      "DIAG-TICKET-01",
+      "DIAG-LOGIC-01"
+    ],
+    "exit_points": [
+      "RBK-GIF-01:verification",
+      "RBK-GIF-02:verification",
+      "RBK-GIF-03:verification",
+      "RBK-GIF-04:verification",
+      "RBK-GIF-05:verification"
+    ],
+    "parallel_tracks": [
+      {
+        "track": "SNOW",
+        "steps": [
+          "DIAG-TICKET-01"
+        ]
+      },
+      {
+        "track": "API",
+        "steps": [
+          "DIAG-UBERKEYS-01",
+          "DIAG-API-01",
+          "DIAG-API-02",
+          "DIAG-API-03"
+        ]
+      },
+      {
+        "track": "LOGIC",
+        "steps": [
+          "DIAG-LOGIC-01"
+        ]
+      }
+    ]
+  },
+  "guardrails": {
+    "permitted_actions": [
+      "Automated ticket routing (assignment group changes), work notes and comments updates, merchant outreach emails, Slack posts to SSOT channel, iSAM dimension updates (supplier dimensions only)",
+      "Read-only: original incident data, Uber Keys mapping data, GIF/IQS/Uber API data"
+    ],
+    "approvals": {
+      "required_for_tools": []
+    },
+    "blast_radius": {
+      "max_batch_size": 1,
+      "limits": {}
+    }
+  }
+}

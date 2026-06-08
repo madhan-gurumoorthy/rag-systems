@@ -1,0 +1,797 @@
+{
+  "metadata": {
+    "title": "LIMO Online Eligibility Validation",
+    "owner_team": "LIMO Ops",
+    "version": "0.1.0",
+    "systems": [
+      "ODIN",
+      "AURUM FC Final Eligibility",
+      "DEW FC API",
+      "Wakanda Promise API",
+      "Eligibility Consolidated FC API",
+      "Shipnodes",
+      "IQS SI",
+      "DEW Seller",
+      "DCC Distributor Center Check"
+    ],
+    "tags": [
+      "limo",
+      "online",
+      "fc",
+      "wfs",
+      "mp",
+      "eligibility",
+      "validation"
+    ]
+  },
+  "intake": {
+    "required_inputs": [
+      "offer_id",
+      "node_id"
+    ]
+  },
+  "diagnostics": [
+    {
+      "id": "DIAG-ODIN-01",
+      "purpose": "Fetch ODIN offer header attributes needed by the online SOP and sub-SOPs.",
+      "inputs": [
+        "offer_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "ODIN_OFFER_FOUND",
+          "ODIN_NOT_FOUND"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-CLASSIFY-INTENT",
+      "purpose": "Resolve the main MP/FC/WFS intent.  Emits INTENT_REQUIRED when missing (triggers the Slack HITL gate) or INTENT_RESOLVED when set.",
+      "inputs": [
+        "state.intent"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "INTENT_REQUIRED",
+          "INTENT_RESOLVED"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-CLASSIFY-SUB-INTENT",
+      "purpose": "Keyword scan of the work-item text to classify the sub-SOP.",
+      "inputs": [
+        "work_item_text"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "SUB_INTENT_MAIN",
+          "SUB_INTENT_COST_RT",
+          "SUB_INTENT_PRE_ORDER",
+          "SUB_INTENT_REPLENISHABLE",
+          "SUB_INTENT_SHIPSIZE",
+          "SUB_INTENT_SHIP_CLASS",
+          "SUB_INTENT_SORTABLE",
+          "SUB_INTENT_GIFTING",
+          "SUB_INTENT_SUBSTITUTION",
+          "SUB_INTENT_ACS",
+          "SUB_INTENT_FTC"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-AURUM-FC-01",
+      "purpose": "Call AURUM Final Eligibility (FC mode) with offer_id + node_id; raw response.",
+      "inputs": [
+        "offer_id",
+        "node_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "AURUM_FC_RESPONSE_RECEIVED"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-DEW-FC-01",
+      "purpose": "Call DEW FC API with offer_id; raw response.",
+      "inputs": [
+        "offer_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "DEW_FC_RESPONSE_RECEIVED"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-PROMISE-01",
+      "purpose": "Call the Wakanda Promise API; non-blocking.",
+      "inputs": [
+        "offer_id",
+        "node_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "PROMISE_RESPONSE_RECEIVED",
+          "PROMISE_MISSING"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-CONSOLIDATED-FC-01",
+      "purpose": "Call Eligibility Consolidated FC with offer_id + node_id + partner_id + partner_type; raw response.",
+      "inputs": [
+        "offer_id",
+        "node_id",
+        "partner_id",
+        "partner_type"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "CONSOLIDATED_FC_RESPONSE_RECEIVED"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-ANALYZE-AURUM-FC",
+      "purpose": "Project AURUM offerDistributorAttr.nodes[<node>] (sts / dccSts / inclusions / exclusions).",
+      "inputs": [
+        "aurum_response",
+        "node_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "AURUM_NODE_MISSING",
+          "AURUM_NODE_INACTIVE",
+          "AURUM_PATHS_PRESENT",
+          "AURUM_NO_PATHS"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-ANALYZE-DEW-FC",
+      "purpose": "Flatten DEW ftxn.nodeData[node].outboundPaths into rows.",
+      "inputs": [
+        "dew_response",
+        "node_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "DEW_PATHS_PRESENT",
+          "DEW_NO_PATHS"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-ANALYZE-PROMISE",
+      "purpose": "Detect whether a Wakanda promise was returned.",
+      "inputs": [
+        "promise_response"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "PROMISE_PRESENT",
+          "PROMISE_MISSING"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-ANALYZE-CONSOLIDATED-FC",
+      "purpose": "Walk payload.consolidatedResponse[].offerConsolidated.nodeData.FC applying eligible/nodes/nodeExceptions semantics.",
+      "inputs": [
+        "consolidated_response",
+        "node_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "CONSOLIDATED_FC_PATHS_PRESENT",
+          "CONSOLIDATED_FC_NO_PATHS"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-ANALYZE-SUBSTITUTION",
+      "purpose": "Flatten substitutionRestrictions[] into a CSV.",
+      "inputs": [
+        "consolidated_response"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "SUBSTITUTION_PROJECTED"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-IQS-SI-01",
+      "purpose": "Resolve the IQS itemNumber for COST RT.",
+      "inputs": [
+        "product_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "IQS_ITEM_PRESENT",
+          "IQS_ITEM_MISSING"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-SHIPNODES-01",
+      "purpose": "Fetch ship-node \u2194 item record (partnership type, status, shipNodeItemId, legacyDistributorId).",
+      "inputs": [
+        "node_id",
+        "iqs_item_number"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "SHIPNODE_PRESENT",
+          "SHIPNODE_NOT_FOUND"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-DEW-SELLER-01",
+      "purpose": "Fetch seller-level ACS/ASE status from DEW Seller.",
+      "inputs": [
+        "seller_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "DEW_SELLER_PRESENT",
+          "DEW_SELLER_MISSING"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-DCC-01",
+      "purpose": "Fetch DCC distributor record by legacy distributor id.",
+      "inputs": [
+        "legacy_distributor_id"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "DCC_PRESENT",
+          "DCC_MISSING"
+        ]
+      }
+    },
+    {
+      "id": "DIAG-DERIVE-SHIPSIZE",
+      "purpose": "Compute girth and derive the shipsize bracket per the SOP table.",
+      "inputs": [
+        "unit_height",
+        "unit_length",
+        "unit_width",
+        "unit_weight"
+      ],
+      "outputs": {
+        "observation_codes": [
+          "SHIPSIZE_DERIVED",
+          "SHIPSIZE_INPUTS_MISSING"
+        ]
+      }
+    }
+  ],
+  "decision_rules": [
+    {
+      "when": {
+        "all": [
+          "INTENT_REQUIRED"
+        ],
+        "any": [],
+        "expressions": []
+      },
+      "then_runbook": "RBK-ONLINE-INTENT-REQUIRED"
+    },
+    {
+      "when": {
+        "all": [
+          "ODIN_NOT_FOUND"
+        ],
+        "any": [],
+        "expressions": []
+      },
+      "then_runbook": "RBK-ONLINE-ODIN-NOT-FOUND"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.offer_created == false"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-OFFER-NOT-CREATED"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.otype_invalid == true"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-OTYPE-INVALID"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.intent == 'WFS' && state.wfs_eligible != 'true'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-WFS-NOT-ELIGIBLE"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.intent == 'MP' && (state.seller_type != 'EXTERNAL' || state.wfs_eligible == 'true')"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-MP-NOT-ELIGIBLE"
+    },
+    {
+      "when": {
+        "all": [
+          "AURUM_NODE_MISSING"
+        ],
+        "any": [],
+        "expressions": [
+          "state.intent == 'FC'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-AURUM-NODE-MISSING"
+    },
+    {
+      "when": {
+        "all": [
+          "AURUM_NODE_INACTIVE"
+        ],
+        "any": [],
+        "expressions": [
+          "state.intent == 'FC'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-AURUM-NODE-INACTIVE"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.sub_intent == 'cost_rt' && state.iqs_item_number == null"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-COST-RT-NO-SI"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.sub_intent == 'cost_rt' && state.iqs_partnership_type_code == 'STORE'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-COST-RT-STORES-ONLY"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.sub_intent == 'pre_order' && state.seller_type == 'EXTERNAL'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-PREORDER-SELLER-EXTERNAL"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.sub_intent == 'replenishable' && state.seller_type == 'EXTERNAL'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-REPLEN-SELLER-EXTERNAL"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.sub_intent == 'acs' && state.ase_seller != true"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-ACS-SELLER-NOT-ENROLLED"
+    },
+    {
+      "when": {
+        "all": [
+          "AURUM_PATHS_PRESENT",
+          "CONSOLIDATED_FC_PATHS_PRESENT"
+        ],
+        "any": [],
+        "expressions": [
+          "state.intent == 'FC'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-FC-ELIGIBLE"
+    },
+    {
+      "when": {
+        "all": [
+          "AURUM_PATHS_PRESENT",
+          "CONSOLIDATED_FC_NO_PATHS"
+        ],
+        "any": [],
+        "expressions": [
+          "state.intent == 'FC'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-FC-PARTIAL"
+    },
+    {
+      "when": {
+        "all": [
+          "AURUM_NO_PATHS"
+        ],
+        "any": [],
+        "expressions": [
+          "state.intent == 'FC'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-FC-NOT-ELIGIBLE"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.intent == 'WFS' && state.wfs_eligible == 'true'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-WFS-ELIGIBLE"
+    },
+    {
+      "when": {
+        "all": [],
+        "any": [],
+        "expressions": [
+          "state.intent == 'MP' && state.seller_type == 'EXTERNAL' && state.wfs_eligible != 'true'"
+        ]
+      },
+      "then_runbook": "RBK-ONLINE-MP-ELIGIBLE"
+    }
+  ],
+  "runbooks": [
+    {
+      "id": "RBK-ONLINE-FC-ELIGIBLE",
+      "card_id": "FC-E1",
+      "name": "FC eligibility paths present",
+      "description": "AURUM and Consolidated FC both return at least one allowed path for the node.",
+      "tags": {
+        "issue_tag": "NONE",
+        "fix_tag": "NONE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-FC-PARTIAL",
+      "card_id": "FC-P1",
+      "name": "Partial FC eligibility \u2014 downstream gap",
+      "description": "AURUM has FC paths but Consolidated FC does not.",
+      "tags": {
+        "issue_tag": "DOWNSTREAM_GAP",
+        "fix_tag": "INVESTIGATE_LIMO_OPS"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-FC-NOT-ELIGIBLE",
+      "card_id": "FC-N1",
+      "name": "No FC paths from AURUM",
+      "description": "AURUM returned no FC inclusion/exclusion paths for the node.",
+      "tags": {
+        "issue_tag": "AURUM_NO_PATHS",
+        "fix_tag": "ESCALATE_LIMO_OPS"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-AURUM-NODE-MISSING",
+      "card_id": "FC-N2",
+      "name": "Node missing in AURUM",
+      "description": "AURUM offerDistributorAttr.nodes does not contain the requested node id.",
+      "tags": {
+        "issue_tag": "AURUM_NODE_MISSING",
+        "fix_tag": "ESCALATE_LIMO_OPS"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-AURUM-NODE-INACTIVE",
+      "card_id": "FC-N3",
+      "name": "AURUM node inactive",
+      "description": "Node sts != ACTIVE or dccSts != true in AURUM.",
+      "tags": {
+        "issue_tag": "AURUM_NODE_INACTIVE",
+        "fix_tag": "ESCALATE_LIMO_OPS"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-WFS-ELIGIBLE",
+      "card_id": "WFS-E1",
+      "name": "WFS eligible",
+      "description": "oa.wfsElig == true for the offer.",
+      "tags": {
+        "issue_tag": "NONE",
+        "fix_tag": "NONE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-WFS-NOT-ELIGIBLE",
+      "card_id": "WFS-N1",
+      "name": "WFS not eligible",
+      "description": "Caller chose WFS but oa.wfsElig is not true.",
+      "tags": {
+        "issue_tag": "WFS_NOT_ELIGIBLE",
+        "fix_tag": "VERIFY_OR_ESCALATE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-MP-ELIGIBLE",
+      "card_id": "MP-E1",
+      "name": "MP eligible",
+      "description": "seller_type == EXTERNAL and wfs_eligible != true.",
+      "tags": {
+        "issue_tag": "NONE",
+        "fix_tag": "NONE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-MP-NOT-ELIGIBLE",
+      "card_id": "MP-N1",
+      "name": "MP not eligible",
+      "description": "Caller chose MP but seller_type != EXTERNAL or wfs_eligible is true.",
+      "tags": {
+        "issue_tag": "MP_NOT_ELIGIBLE",
+        "fix_tag": "VERIFY_OR_ESCALATE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-INTENT-REQUIRED",
+      "card_id": "I1",
+      "name": "Main intent required (HITL)",
+      "description": "Main MP/FC/WFS intent is missing \u2014 pipeline pauses for Slack-based human input.",
+      "tags": {
+        "issue_tag": "INTENT_MISSING",
+        "fix_tag": "AWAITING_HUMAN_INPUT"
+      },
+      "actions": [
+        {
+          "id": "pick_mp",
+          "depends_on": [],
+          "description": "Resume validation with MP (Marketplace) intent.",
+          "tool_id": "ACT-NOOP-01",
+          "params": {
+            "intent": "MP"
+          }
+        },
+        {
+          "id": "pick_fc",
+          "depends_on": [],
+          "description": "Resume validation with FC (Walmart 1P fulfillment) intent.",
+          "tool_id": "ACT-NOOP-01",
+          "params": {
+            "intent": "FC"
+          }
+        },
+        {
+          "id": "pick_wfs",
+          "depends_on": [],
+          "description": "Resume validation with WFS (Walmart Fulfillment Services) intent.",
+          "tool_id": "ACT-NOOP-01",
+          "params": {
+            "intent": "WFS"
+          }
+        }
+      ]
+    },
+    {
+      "id": "RBK-ONLINE-ODIN-NOT-FOUND",
+      "card_id": "B1",
+      "name": "Offer not found in ODIN",
+      "description": "Offer ID does not resolve in ODIN.",
+      "tags": {
+        "issue_tag": "ODIN_NOT_FOUND",
+        "fix_tag": "VERIFY_OR_ESCALATE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-OFFER-NOT-CREATED",
+      "card_id": "B2",
+      "name": "ODIN offer not fully created",
+      "description": "Offer is in ODIN but oa.ofrCrt is not true.",
+      "tags": {
+        "issue_tag": "OFFER_NOT_CREATED",
+        "fix_tag": "ESCALATE_LIMO_OPS"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-OTYPE-INVALID",
+      "card_id": "B3",
+      "name": "Offer type invalid",
+      "description": "oa.otyp is not a supported online offer type.",
+      "tags": {
+        "issue_tag": "OTYPE_INVALID",
+        "fix_tag": "VERIFY_OR_ESCALATE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-COST-RT-NO-SI",
+      "card_id": "B4",
+      "name": "COST RT \u2014 IQS itemNumber missing",
+      "description": "COST RT diagnostic requested but IQS SI did not return an itemNumber for the product id.",
+      "tags": {
+        "issue_tag": "COST_RT_NO_SI",
+        "fix_tag": "ESCALATE_LIMO_OPS"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-COST-RT-STORES-ONLY",
+      "card_id": "B5",
+      "name": "COST RT \u2014 STORE-only partnership",
+      "description": "Shipnodes returned partnershipTypeCode = STORE; COST RT is not applicable for stores-only ship nodes.",
+      "tags": {
+        "issue_tag": "COST_RT_STORES_ONLY",
+        "fix_tag": "ESCALATE_LIMO_OPS"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-PREORDER-SELLER-EXTERNAL",
+      "card_id": "B6",
+      "name": "Pre-Order \u2014 EXTERNAL seller blocked",
+      "description": "Pre-Order is not supported for EXTERNAL sellers.",
+      "tags": {
+        "issue_tag": "PREORDER_SELLER_EXTERNAL",
+        "fix_tag": "VERIFY_OR_ESCALATE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-REPLEN-SELLER-EXTERNAL",
+      "card_id": "B7",
+      "name": "Replenishable \u2014 EXTERNAL seller blocked",
+      "description": "Replenishable is not supported for EXTERNAL sellers.",
+      "tags": {
+        "issue_tag": "REPLEN_SELLER_EXTERNAL",
+        "fix_tag": "VERIFY_OR_ESCALATE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-ACS-SELLER-NOT-ENROLLED",
+      "card_id": "B8",
+      "name": "ACS \u2014 seller not enrolled",
+      "description": "DEW Seller reports aseSeller != true \u2014 the seller is not enrolled in Automated Shipping Enabled.",
+      "tags": {
+        "issue_tag": "ACS_NOT_ENROLLED",
+        "fix_tag": "VERIFY_OR_ESCALATE"
+      },
+      "actions": []
+    },
+    {
+      "id": "RBK-ONLINE-ESCALATE",
+      "card_id": "E1",
+      "name": "Escalate \u2014 fallback",
+      "description": "No rule matched \u2014 manual investigation by LIMO Ops.",
+      "tags": {
+        "issue_tag": "UNCLASSIFIED",
+        "fix_tag": "ESCALATE_LIMO_OPS"
+      },
+      "actions": []
+    }
+  ],
+  "tools": [
+    {
+      "id": "DIAG-ODIN-01",
+      "description": "Fetch offer from ODIN"
+    },
+    {
+      "id": "DIAG-CLASSIFY-INTENT",
+      "description": "Resolve / request main MP/FC/WFS intent"
+    },
+    {
+      "id": "DIAG-CLASSIFY-SUB-INTENT",
+      "description": "Keyword-based sub-SOP dispatch"
+    },
+    {
+      "id": "DIAG-AURUM-FC-01",
+      "description": "AURUM FC Final Eligibility API"
+    },
+    {
+      "id": "DIAG-DEW-FC-01",
+      "description": "DEW FC API"
+    },
+    {
+      "id": "DIAG-PROMISE-01",
+      "description": "Wakanda Promise API"
+    },
+    {
+      "id": "DIAG-CONSOLIDATED-FC-01",
+      "description": "Eligibility Consolidated FC API"
+    },
+    {
+      "id": "DIAG-ANALYZE-AURUM-FC",
+      "description": "AURUM FC path analyzer"
+    },
+    {
+      "id": "DIAG-ANALYZE-DEW-FC",
+      "description": "DEW FC path analyzer"
+    },
+    {
+      "id": "DIAG-ANALYZE-PROMISE",
+      "description": "Promise analyzer (non-blocking)"
+    },
+    {
+      "id": "DIAG-ANALYZE-CONSOLIDATED-FC",
+      "description": "Consolidated FC path analyzer"
+    },
+    {
+      "id": "DIAG-ANALYZE-SUBSTITUTION",
+      "description": "Substitution restrictions analyzer"
+    },
+    {
+      "id": "DIAG-IQS-SI-01",
+      "description": "IQS SI item-number lookup"
+    },
+    {
+      "id": "DIAG-SHIPNODES-01",
+      "description": "Shipnodes record lookup"
+    },
+    {
+      "id": "DIAG-DEW-SELLER-01",
+      "description": "DEW Seller ACS/ASE status"
+    },
+    {
+      "id": "DIAG-DCC-01",
+      "description": "DCC distributor-center check"
+    },
+    {
+      "id": "DIAG-DERIVE-SHIPSIZE",
+      "description": "Girth + shipsize bracket derivation"
+    },
+    {
+      "id": "DIAG-DECISION-MATRIX",
+      "description": "Map observations to an online eligibility runbook"
+    }
+  ],
+  "guardrails": {
+    "permitted_actions": [
+      "pick_mp",
+      "pick_fc",
+      "pick_wfs"
+    ],
+    "approvals": {
+      "required_for_tools": [],
+      "verdict_gate": "PENDING_INTENT"
+    },
+    "blast_radius": {
+      "max_batch_size": 1,
+      "limits": {}
+    }
+  }
+}

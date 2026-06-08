@@ -1,0 +1,551 @@
+/* LD Portable – Text */
+/* Body */
+.ld-text-body-body {
+  color: var(--ld-semantic-color-text, #2e2f32);
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.ld-text-body-isMonospace {
+  font-family: EverydaySansMono, 'Courier New', 'monospace';
+}
+
+.ld-text-body-large.ld-text-body-weightDefault {
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.5rem;
+}
+.ld-text-body-large.ld-text-body-weightAlt {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+}
+
+.ld-text-body-medium.ld-text-body-weightDefault {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5rem;
+}
+.ld-text-body-medium.ld-text-body-weightAlt {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+}
+
+.ld-text-body-small.ld-text-body-weightDefault {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+}
+.ld-text-body-small.ld-text-body-weightAlt {
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+}
+
+/* Caption */
+.ld-text-caption-caption {
+  color: var(--ld-semantic-color-text, #2e2f32);
+}
+
+.ld-text-caption-isMonospace {
+  font-family: EverydaySansMono, 'Courier New', 'monospace';
+}
+
+.ld-text-caption-weightDefault {
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1rem;
+}
+
+.ld-text-caption-weightAlt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1rem;
+}
+
+/* Display */
+.ld-text-display-display {
+  color: var(--ld-semantic-color-text, #2e2f32);
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.ld-text-display-large.ld-text-display-weightDefault {
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 2.5rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-display-large.ld-text-display-weightDefault {
+    font-size: 2.625rem;
+    line-height: 3.25rem;
+  }
+}
+.ld-text-display-large.ld-text-display-weightAlt {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 2.5rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-display-large.ld-text-display-weightAlt {
+    font-size: 2.625rem;
+    line-height: 3.25rem;
+  }
+}
+
+.ld-text-display-small.ld-text-display-weightDefault {
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 2.25rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-display-small.ld-text-display-weightDefault {
+    font-size: 2.25rem;
+    line-height: 3rem;
+  }
+}
+.ld-text-display-small.ld-text-display-weightAlt {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 2.25rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-display-small.ld-text-display-weightAlt {
+    font-size: 2.25rem;
+    line-height: 3rem;
+  }
+}
+
+/* Heading */
+.ld-text-heading-heading {
+  color: var(--ld-semantic-color-text, #2e2f32);
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.ld-text-heading-large.ld-text-heading-weightDefault {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 2rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-heading-large.ld-text-heading-weightDefault {
+    font-size: 2rem;
+    line-height: 2.5rem;
+  }
+}
+.ld-text-heading-large.ld-text-heading-weightAlt {
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 2rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-heading-large.ld-text-heading-weightAlt {
+    font-size: 2rem;
+    line-height: 2.5rem;
+  }
+}
+
+.ld-text-heading-medium.ld-text-heading-weightDefault {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.75rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-heading-medium.ld-text-heading-weightDefault {
+    font-size: 1.5rem;
+    line-height: 2.25rem;
+  }
+}
+.ld-text-heading-medium.ld-text-heading-weightAlt {
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.75rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-heading-medium.ld-text-heading-weightAlt {
+    font-size: 1.5rem;
+    line-height: 2.25rem;
+  }
+}
+
+.ld-text-heading-small.ld-text-heading-weightDefault {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-heading-small.ld-text-heading-weightDefault {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}
+.ld-text-heading-small.ld-text-heading-weightAlt {
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.5rem;
+}
+@media screen and (min-width: 56.25rem) {
+  .ld-text-heading-small.ld-text-heading-weightAlt {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}
+
+/* TextColor */
+.ld-text-textcolor-accentBlue {
+  color: var(--ld-semantic-color-text-accent-blue, #0053e2) !important;
+}
+
+.ld-text-textcolor-accentBlueBold {
+  color: var(--ld-semantic-color-text-accent-blue-bold, #002e99) !important;
+}
+
+.ld-text-textcolor-accentCyan {
+  color: var(--ld-semantic-color-text-accent-cyan, #0076b3) !important;
+}
+
+.ld-text-textcolor-accentCyanBold {
+  color: var(--ld-semantic-color-text-accent-cyan-bold, #004a70) !important;
+}
+
+.ld-text-textcolor-accentGray {
+  color: var(--ld-semantic-color-text-accent-gray, #74767c) !important;
+}
+
+.ld-text-textcolor-accentGrayBold {
+  color: var(--ld-semantic-color-text-accent-gray-bold, #515357) !important;
+}
+
+.ld-text-textcolor-accentGreen {
+  color: var(--ld-semantic-color-text-accent-green, #2a8703) !important;
+}
+
+.ld-text-textcolor-accentGreenBold {
+  color: var(--ld-semantic-color-text-accent-green-bold, #1d5f02) !important;
+}
+
+.ld-text-textcolor-accentOrange {
+  color: var(--ld-semantic-color-text-accent-orange, #c83c00) !important;
+}
+
+.ld-text-textcolor-accentOrangeBold {
+  color: var(--ld-semantic-color-text-accent-orange-bold, #af2f00) !important;
+}
+
+.ld-text-textcolor-accentPink {
+  color: var(--ld-semantic-color-text-accent-pink, #cb2c90) !important;
+}
+
+.ld-text-textcolor-accentPinkBold {
+  color: var(--ld-semantic-color-text-accent-pink-bold, #8c1e64) !important;
+}
+
+.ld-text-textcolor-accentPurple {
+  color: var(--ld-semantic-color-text-accent-purple, #63327e) !important;
+}
+
+.ld-text-textcolor-accentPurpleBold {
+  color: var(--ld-semantic-color-text-accent-purple-bold, #452358) !important;
+}
+
+.ld-text-textcolor-accentRed {
+  color: var(--ld-semantic-color-text-accent-red, #ea1100) !important;
+}
+
+.ld-text-textcolor-accentRedBold {
+  color: var(--ld-semantic-color-text-accent-red-bold, #a20c00) !important;
+}
+
+.ld-text-textcolor-accentSpark {
+  color: var(--ld-semantic-color-text-accent-spark, #995213) !important;
+}
+
+.ld-text-textcolor-accentSparkBold {
+  color: var(--ld-semantic-color-text-accent-spark-bold, #662b0d) !important;
+}
+
+.ld-text-textcolor-accentTeal {
+  color: var(--ld-semantic-color-text-accent-teal, #00809e) !important;
+}
+
+.ld-text-textcolor-accentTealBold {
+  color: var(--ld-semantic-color-text-accent-teal-bold, #005a6f) !important;
+}
+
+.ld-text-textcolor-accentYellow {
+  color: var(--ld-semantic-color-text-accent-yellow, #996900) !important;
+}
+
+.ld-text-textcolor-accentYellowBold {
+  color: var(--ld-semantic-color-text-accent-yellow-bold, #663800) !important;
+}
+
+.ld-text-textcolor-onFillAccentBlue {
+  color: var(--ld-semantic-color-text-on-fill-accent-blue, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillAccentBlueSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-blue-subtle, #002e99) !important;
+}
+
+.ld-text-textcolor-onFillAccentCyan {
+  color: var(--ld-semantic-color-text-on-fill-accent-cyan, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillAccentCyanSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-cyan-subtle, #004a70) !important;
+}
+
+.ld-text-textcolor-onFillAccentGray {
+  color: var(--ld-semantic-color-text-on-fill-accent-gray, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillAccentGraySubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-gray-subtle, #515357) !important;
+}
+
+.ld-text-textcolor-onFillAccentGreen {
+  color: var(--ld-semantic-color-text-on-fill-accent-green, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillAccentGreenSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-green-subtle, #1d5f02) !important;
+}
+
+.ld-text-textcolor-onFillAccentOrange {
+  color: var(--ld-semantic-color-text-on-fill-accent-orange, #2e2f32) !important;
+}
+
+.ld-text-textcolor-onFillAccentOrangeSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-orange-subtle, #af2f00) !important;
+}
+
+.ld-text-textcolor-onFillAccentPink {
+  color: var(--ld-semantic-color-text-on-fill-accent-pink, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillAccentPinkSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-pink-subtle, #8c1e64) !important;
+}
+
+.ld-text-textcolor-onFillAccentPurple {
+  color: var(--ld-semantic-color-text-on-fill-accent-purple, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillAccentPurpleSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-purple-subtle, #452358) !important;
+}
+
+.ld-text-textcolor-onFillAccentRed {
+  color: var(--ld-semantic-color-text-on-fill-accent-red, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillAccentRedSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-red-subtle, #a20c00) !important;
+}
+
+.ld-text-textcolor-onFillAccentSpark {
+  color: var(--ld-semantic-color-text-on-fill-accent-spark, #2e2f32) !important;
+}
+
+.ld-text-textcolor-onFillAccentSparkSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-spark-subtle, #662b0d) !important;
+}
+
+.ld-text-textcolor-onFillAccentTeal {
+  color: var(--ld-semantic-color-text-on-fill-accent-teal, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillAccentTealSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-teal-subtle, #005a6f) !important;
+}
+
+.ld-text-textcolor-onFillAccentYellow {
+  color: var(--ld-semantic-color-text-on-fill-accent-yellow, #2e2f32) !important;
+}
+
+.ld-text-textcolor-onFillAccentYellowSubtle {
+  color: var(--ld-semantic-color-text-on-fill-accent-yellow-subtle, #663800) !important;
+}
+
+.ld-text-textcolor-onFill {
+  color: var(--ld-semantic-color-text-on-fill, #2e2f32) !important;
+}
+
+.ld-text-textcolor-onFillActivated {
+  color: var(--ld-semantic-color-text-on-fill-activated, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillActivatedDisabled {
+  color: var(--ld-semantic-color-text-on-fill-activated-disabled, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillActivatedSubtle {
+  color: var(--ld-semantic-color-text-on-fill-activated-subtle, #2e2f32) !important;
+}
+
+.ld-text-textcolor-onFillActivatedSubtleDisabled {
+  color: var(--ld-semantic-color-text-on-fill-activated-subtle-disabled, #babbbe) !important;
+}
+
+.ld-text-textcolor-onFillBrand {
+  color: var(--ld-semantic-color-text-on-fill-brand, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillBrandBold {
+  color: var(--ld-semantic-color-text-on-fill-brand-bold, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillBrandSubtle {
+  color: var(--ld-semantic-color-text-on-fill-brand-subtle, #114ab6) !important;
+}
+
+.ld-text-textcolor-onFillDisabled {
+  color: var(--ld-semantic-color-text-on-fill-disabled, #babbbe) !important;
+}
+
+.ld-text-textcolor-onFillEdited {
+  color: var(--ld-semantic-color-text-on-fill-edited, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillEditedSubtle {
+  color: var(--ld-semantic-color-text-on-fill-edited-subtle, #452358) !important;
+}
+
+.ld-text-textcolor-onFillInfo {
+  color: var(--ld-semantic-color-text-on-fill-info, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillInfoSubtle {
+  color: var(--ld-semantic-color-text-on-fill-info-subtle, #002e99) !important;
+}
+
+.ld-text-textcolor-onFillInverse {
+  color: var(--ld-semantic-color-text-on-fill-inverse, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillNegative {
+  color: var(--ld-semantic-color-text-on-fill-negative, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillNegativeSubtle {
+  color: var(--ld-semantic-color-text-on-fill-negative-subtle, #a20c00) !important;
+}
+
+.ld-text-textcolor-onFillPositive {
+  color: var(--ld-semantic-color-text-on-fill-positive, #ffffff) !important;
+}
+
+.ld-text-textcolor-onFillPositiveSubtle {
+  color: var(--ld-semantic-color-text-on-fill-positive-subtle, #1d5f02) !important;
+}
+
+.ld-text-textcolor-onFillTransparent {
+  color: var(--ld-semantic-color-text-on-fill-transparent, #2e2f32) !important;
+}
+
+.ld-text-textcolor-onFillWarning {
+  color: var(--ld-semantic-color-text-on-fill-warning, #2e2f32) !important;
+}
+
+.ld-text-textcolor-onFillWarningSubtle {
+  color: var(--ld-semantic-color-text-on-fill-warning-subtle, #662b0d) !important;
+}
+
+.ld-text-textcolor-activated {
+  color: var(--ld-semantic-color-text-activated, #114ab6) !important;
+}
+
+.ld-text-textcolor-brand {
+  color: var(--ld-semantic-color-text-brand, #0053e2) !important;
+}
+
+.ld-text-textcolor-brandBold {
+  color: var(--ld-semantic-color-text-brand-bold, #001e60) !important;
+}
+
+.ld-text-textcolor-disabled {
+  color: var(--ld-semantic-color-text-disabled, #babbbe) !important;
+}
+
+.ld-text-textcolor-edited {
+  color: var(--ld-semantic-color-text-edited, #63327e) !important;
+}
+
+.ld-text-textcolor-editedBold {
+  color: var(--ld-semantic-color-text-edited-bold, #452358) !important;
+}
+
+.ld-text-textcolor-info {
+  color: var(--ld-semantic-color-text-info, #0053e2) !important;
+}
+
+.ld-text-textcolor-infoBold {
+  color: var(--ld-semantic-color-text-info-bold, #002e99) !important;
+}
+
+.ld-text-textcolor-infoInverse {
+  color: var(--ld-semantic-color-text-info-inverse, #c9dcfd) !important;
+}
+
+.ld-text-textcolor-inverse {
+  color: var(--ld-semantic-color-text-inverse, #ffffff) !important;
+}
+
+.ld-text-textcolor-magicStart {
+  color: var(--ld-semantic-color-text-magic-start, #0053E2) !important;
+}
+
+.ld-text-textcolor-magicMiddle {
+  color: var(--ld-semantic-color-text-magic-middle, #3D90EC) !important;
+}
+
+.ld-text-textcolor-magicStop {
+  color: var(--ld-semantic-color-text-magic-stop, #79CDF6) !important;
+}
+
+.ld-text-textcolor-negative {
+  color: var(--ld-semantic-color-text-negative, #ea1100) !important;
+}
+
+.ld-text-textcolor-negativeBold {
+  color: var(--ld-semantic-color-text-negative-bold, #a20c00) !important;
+}
+
+.ld-text-textcolor-negativeInverse {
+  color: var(--ld-semantic-color-text-negative-inverse, #f69991) !important;
+}
+
+.ld-text-textcolor-positive {
+  color: var(--ld-semantic-color-text-positive, #2a8703) !important;
+}
+
+.ld-text-textcolor-positiveBold {
+  color: var(--ld-semantic-color-text-positive-bold, #1d5f02) !important;
+}
+
+.ld-text-textcolor-positiveInverse {
+  color: var(--ld-semantic-color-text-positive-inverse, #95c381) !important;
+}
+
+.ld-text-textcolor-subtle {
+  color: var(--ld-semantic-color-text-subtle, #515357) !important;
+}
+
+.ld-text-textcolor-subtlest {
+  color: var(--ld-semantic-color-text-subtlest, #74767c) !important;
+}
+
+.ld-text-textcolor-warning {
+  color: var(--ld-semantic-color-text-warning, #995213) !important;
+}
+
+.ld-text-textcolor-warningBold {
+  color: var(--ld-semantic-color-text-warning-bold, #662b0d) !important;
+}
+
+.ld-text-textcolor-warningInverse {
+  color: var(--ld-semantic-color-text-warning-inverse, #ffedbc) !important;
+}

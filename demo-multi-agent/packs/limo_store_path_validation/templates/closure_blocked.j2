@@ -1,0 +1,108 @@
+1P STORE PATH ELIGIBILITY — BLOCKED
+═══════════════════════════════════════════
+
+Verdict: BLOCKED
+Offer ID:  {{ offer_id | default(external_ref) }}
+Store ID:  {{ store_id | default("—") }}
+Sub-case:  {{ subcase | default("main") | upper }}
+Block Reason: {{ verdict_reason | default("Pipeline could not complete validation.") }}
+{% if runbook_id %}
+Runbook: {{ runbook_id }}
+{% endif %}
+
+─── What we could fetch ───
+{% if offer_id %}  - Offer ID:                      {{ offer_id }}
+{% endif %}
+{% if seller_id %}  - Seller ID:                     {{ seller_id }}
+{% endif %}
+{% if seller_type %}  - Seller Type:                   {{ seller_type }}
+{% endif %}
+{% if offer_created is not none %}  - Offer Created (oa.ofrCrt):     {{ offer_created }}
+{% endif %}
+{% if offer_type %}  - Offer Type:                    {{ offer_type }}
+{% endif %}
+{% if ftc_csv or ftc %}  - FTC:                           {{ ftc_csv | default(ftc) }}
+{% endif %}
+{% if item_class_id %}  - Item Class ID:                 {{ item_class_id }}
+{% endif %}
+{% if product_id %}  - Product ID:                    {{ product_id }}
+{% endif %}
+{% if delivery_method %}  - Delivery Method:               {{ delivery_method }}
+{% endif %}
+{% if product_type %}  - Product Type:                  {{ product_type }}
+{% endif %}
+{% if acc_d_nbr %}  - Acct Dept Number:              {{ acc_d_nbr }}
+{% endif %}
+{% if pfhbrc %}  - PFHBRC:                        {{ pfhbrc }}
+{% endif %}
+
+{% if store_status %}─── Store ───
+  - Store Status (MDM):            {{ store_status }}
+{% if store_list_name %}  - Store List Check ({{ store_list_name }}): {{ "ELIGIBLE" if store_list_eligible else "NOT ELIGIBLE" }}
+{% endif %}
+{% endif %}
+
+{% if block_code == "ODIN_NOT_FOUND" %}
+─── ODIN Lookup Failed ───
+  The offer_id {{ offer_id | default("—") }} could not be found in ODIN.
+  Confirm the offer_id is correct and that the upstream catalog has propagated.
+{% elif block_code == "OFFER_NOT_CREATED" %}
+─── Offer Not Created ───
+  ODIN returned the offer but `oa.ofrCrt` is not true.  The offer has not
+  finished publishing — re-run validation once the publisher confirms
+  creation.
+{% elif block_code == "STORE_NOT_OPEN" %}
+─── Store Not Open ───
+  MDM reports the store {{ store_id | default("—") }} as
+  `{{ store_status | default("UNKNOWN") }}`.  Only stores with status
+  `OPEN` are eligible for any 1P store-path validation.
+{% elif block_code == "STORE_LIST_NOT_ELIGIBLE" %}
+─── Store Not on {{ store_list_name | default("Eligible") }} List ───
+  Store {{ store_id | default("—") }} is not on the
+  `{{ store_list_name | default("required") }}` eligible-store list for
+  sub-case `{{ subcase | upper }}`.  No further path validation is run.
+{% elif block_code == "SUBCASE_PRECONDITION_FAILED" %}
+─── Sub-case Precondition Not Met ───
+{% if subcase == "tire" %}
+  Tire validation requires item_class_id == 28 and FTC containing TIRE.
+  Observed: item_class_id={{ item_class_id | default("—") }},
+  ftc={{ ftc_csv | default(ftc) | default("—") }}.
+{% elif subcase == "photo" %}
+  Photo validation requires item_class_id == 52 and FTC containing PHOTOS.
+  Observed: item_class_id={{ item_class_id | default("—") }},
+  ftc={{ ftc_csv | default(ftc) | default("—") }}.
+{% elif subcase == "custom_cake" %}
+  Custom Cake requires PFHBRC == 98-1471-3338-7060-2251.
+  Observed: pfhbrc={{ pfhbrc | default("—") }}.
+{% elif subcase == "petrx" %}
+  PetRx requires accDNbr == 38, Product Type == "Prescription Medicines",
+  and afa == Y.  Observed: accDNbr={{ acc_d_nbr | default("—") }},
+  ptyp={{ product_type | default("—") }},
+  afa={{ approved_for_animals | default("—") }}.
+{% elif subcase == "vision_rx" %}
+  Vision RX requires the offer to flag Vision Center Approved and the
+  store to be 30100.  Observed: vca={{ vision_center_approved }},
+  store_id={{ store_id | default("—") }}.
+{% elif subcase == "humax_rx" %}
+  Humax RX requires accDNbr == 38, Product Type == "Prescription
+  Medicines", and afa null/N.  Observed:
+  accDNbr={{ acc_d_nbr | default("—") }},
+  ptyp={{ product_type | default("—") }},
+  afa={{ approved_for_animals | default("—") }}.
+{% elif subcase == "delivery_inhome" %}
+  Delivery Inhome requires accDNbr == 96 and a PFHBRC outside the
+  restricted set.  Observed: accDNbr={{ acc_d_nbr | default("—") }},
+  pfhbrc={{ pfhbrc | default("—") }}.
+{% endif %}
+{% elif block_code == "UPSTREAM_ERROR" %}
+─── Upstream API Error ───
+  An upstream call failed during diagnostic execution.  Detail:
+  {{ verdict_reason | default("see event log for tool error") }}.
+{% else %}
+─── Pipeline Halted ───
+  Diagnostic pipeline halted before final eligibility could be computed.
+  See `verdict_reason` above and the event log for the failing step.
+{% endif %}
+
+Status: INVESTIGATION_REQUIRED
+═══════════════════════════════════════════

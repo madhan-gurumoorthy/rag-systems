@@ -1,0 +1,123 @@
+/* LD Portable – Spinner */
+/* Spinner */
+.ld-spinner-container {
+  display: inline-block;
+  line-height: 1;
+}
+
+.ld-spinner-neutral {
+  color: var(--ld-semantic-color-loading, #74767c);
+}
+
+.ld-spinner-white {
+  color: var(--ld-semantic-color-loading-white, #ffffff);
+}
+
+.ld-spinner-large {
+  height: 3rem;
+  width: 3rem;
+}
+
+.ld-spinner-small {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+.ld-spinner-pill {
+  animation-duration: 1.2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  fill: currentcolor;
+  transform-origin: 24px 24px;
+}
+
+.ld-spinner-pill2 {
+  animation-name: pill2;
+}
+
+@keyframes pill2 {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(60deg);
+  }
+  70% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.ld-spinner-pill3 {
+  animation-name: pill3;
+}
+
+@keyframes pill3 {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(120deg);
+  }
+  70% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.ld-spinner-pill4 {
+  animation-name: pill4;
+}
+
+@keyframes pill4 {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(180deg);
+  }
+  70% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.ld-spinner-pill5 {
+  animation-name: pill5;
+}
+
+@keyframes pill5 {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(240deg);
+  }
+  70% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.ld-spinner-pill6 {
+  animation-name: pill6;
+}
+
+@keyframes pill6 {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(300deg);
+  }
+  70% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,16 @@
+DEVOPS HEALTH CHECK — CLOSURE SUMMARY
+═══════════════════════════════════════════
+
+Verdict: RESTART_NEEDED
+Incident: {{ incident_number }}
+Host: {{ hostname }}
+Service: {{ service_name }}
+
+Observations:
+  - Ping:     {{ ping_status | default("unknown") }}
+  - CPU pct:  {{ cpu_percent | default("unknown") }}
+
+Action Taken: Notified on-call channel; awaiting approval to restart.
+
+Status: PENDING_APPROVAL
+═══════════════════════════════════════════

@@ -1,0 +1,83 @@
+/**
+ * Sparky Theme
+ * Auto-generated from Airtable — do not edit manually
+ */
+
+[data-ld-theme="Sparky"] {
+  --ld-semantic-color-action-fill-primary: #001e60;
+  --ld-semantic-color-action-fill-primary-focused: #080042;
+  --ld-semantic-color-action-fill-primary-hovered: #080042;
+  --ld-semantic-color-action-fill-primary-pressed: #0e002e;
+  --ld-semantic-color-action-text-onFill-secondary: #001e60;
+  --ld-semantic-color-action-text-onFill-secondary-focused: #001e60;
+  --ld-semantic-color-action-text-onFill-secondary-hovered: #001e60;
+  --ld-semantic-color-action-text-onFill-secondary-pressed: #001e60;
+  --ld-semantic-color-action-text-onFill-tertiary: #001e60;
+  --ld-semantic-color-action-text-onFill-tertiary-focused: #001e60;
+  --ld-semantic-color-action-text-onFill-tertiary-hovered: #001e60;
+  --ld-semantic-color-action-text-onFill-tertiary-pressed: #001e60;
+  --ld-semantic-color-action-text-onFill-transparent-focused: #001e60;
+  --ld-semantic-color-action-text-onFill-transparent-hovered: #001e60;
+  --ld-semantic-color-action-text-onFill-transparent-pressed: #001e60;
+  --ld-semantic-color-background-inverse: #080042;
+  --ld-semantic-color-background-subtle: #e7f6fe;
+  --ld-semantic-color-border-accent-gray: #d5d6d8;
+  --ld-semantic-color-border-activated: #001e60;
+  --ld-semantic-color-border-brand: #001e60;
+  --ld-semantic-color-border-info: #002e99;
+  --ld-semantic-color-border-subtle: #74767c;
+  --ld-semantic-color-border-subtlest: rgba(255, 255, 255, 0.4000);
+  --ld-semantic-color-field-text-onFill: #001e60;
+  --ld-semantic-color-fill-accent-blue-subtle: #f0f5ff;
+  --ld-semantic-color-fill-accent-cyan-subtle: #90d6f9;
+  --ld-semantic-color-fill-accent-gray-subtle: #f8f8f8;
+  --ld-semantic-color-fill-activated: #001e60;
+  --ld-semantic-color-fill-activated-focused: #080042;
+  --ld-semantic-color-fill-activated-hovered: #080042;
+  --ld-semantic-color-fill-activated-pressed: #0e002e;
+  --ld-semantic-color-fill-brand-subtle: #c9dcfd;
+  --ld-semantic-color-fill-brand-subtle-focused: #acc8fb;
+  --ld-semantic-color-fill-brand-subtle-hovered: #acc8fb;
+  --ld-semantic-color-fill-brand-subtle-pressed: #90b5f9;
+  --ld-semantic-color-fill-inverse: #080042;
+  --ld-semantic-color-fill-subtle: #e7f6fe;
+  --ld-semantic-color-filter-border-activated: #001e60;
+  --ld-semantic-color-filter-border-activated-focused: #001e60;
+  --ld-semantic-color-filter-border-activated-hovered: #001e60;
+  --ld-semantic-color-filter-border-activated-pressed: #0e002e;
+  --ld-semantic-color-input-border: #babbbe;
+  --ld-semantic-color-input-fill-activated: #ffffff;
+  --ld-semantic-color-input-text-onFill: #001e60;
+  --ld-semantic-color-pageNav-fill: rgba(255, 255, 255, 0.0000);
+  --ld-semantic-color-pageNav-fill-activated: #f0faff;
+  --ld-semantic-color-pageNav-fill-activated-focused: #e7f6fe;
+  --ld-semantic-color-pageNav-fill-activated-hovered: #e7f6fe;
+  --ld-semantic-color-pageNav-fill-activated-pressed: #c9ebfd;
+  --ld-semantic-color-pageNav-fill-focused: #f0faff;
+  --ld-semantic-color-pageNav-fill-hovered: #f0faff;
+  --ld-semantic-color-pageNav-fill-pressed: #e7f6fe;
+  --ld-semantic-color-pageNav-indicator-activated: #001e60;
+  --ld-semantic-color-pageNav-indicator-activated-focused: #001e60;
+  --ld-semantic-color-pageNav-indicator-activated-hovered: #001e60;
+  --ld-semantic-color-pageNav-indicator-activated-pressed: #001e60;
+  --ld-semantic-color-pageNav-indicator-focused: #c9ebfd;
+  --ld-semantic-color-pageNav-indicator-hovered: #c9ebfd;
+  --ld-semantic-color-pageNav-indicator-pressed: #90d6f9;
+  --ld-semantic-color-pageNav-text-onFill: #001e60;
+  --ld-semantic-color-pageNav-text-onFill-activated: #001e60;
+  --ld-semantic-color-surface-brand: #c9ebfd;
+  --ld-semantic-color-switch-fill-activated: #001270;
+  --ld-semantic-color-switch-fill-activated-focused: #001e60;
+  --ld-semantic-color-switch-fill-activated-hovered: #001e60;
+  --ld-semantic-color-switch-fill-activated-pressed: #0e002e;
+  --ld-semantic-color-text-accent-cyan: #c9ebfd;
+  --ld-semantic-color-text-onFill-brand-subtle: #001e60;
+  --ld-semantic-color-text-onFill-brand-subtle-focused: #001e60;
+  --ld-semantic-color-text-onFill-brand-subtle-hovered: #001e60;
+  --ld-semantic-color-text-onFill-brand-subtle-pressed: #0e002e;
+  --ld-semantic-color-text-onFill-transparent: #001e60;
+  --wcp-semantic-color-notice-text-onFill-primary: #080042;
+  --wcp-semantic-color-surface-overlay-brand-bold: #001270;
+  --wcp-semantic-color-surface-overlay-brand-subtle: #e7f6fe;
+  --wcp-semantic-media-topNav-logo-compact: var(--wcp-primitive-media-logo);
+}

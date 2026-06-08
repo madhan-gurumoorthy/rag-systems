@@ -1,0 +1,26 @@
+CLOSURE SUMMARY
+═══════════════════════════════════════════════════════════
+Offer ID:       {{ offer_id | default(external_ref) }}
+Publish Status: {{ publish_status | default("UNPUBLISHED") }}
+Audit History:  {{ audit_history | default("N/A") }}
+Issue Summary:  All unpublish reason codes correctly applied
+
+Reason Codes Validated: {{ reason_codes_checked | default([]) | join(", ") }}
+
+Analysis:
+Offer {{ offer_id | default(external_ref) }} was validated against
+{{ validation_summary.total | default(0) }} unpublish reason code(s).
+All detected reason codes are correctly applied based on current catalog data.
+The offer is legitimately unpublished.
+
+Affected Component: Catalog Compliance — Offer Publish Status
+Impact: Offer correctly suppressed
+Root Cause: Active unpublish reason codes validated as correctly applied
+
+Recommended Actions:
+  1. Address root cause for each reason code to allow natural re-publish.
+  2. No immediate compliance action required.
+
+Status: CORRECTLY_UNPUBLISHED
+Slack Summary: ✅ *CORRECTLY UNPUBLISHED* — Offer {{ offer_id | default(external_ref) }} | All reason code(s) valid
+═══════════════════════════════════════════════════════════

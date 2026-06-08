@@ -1,0 +1,133 @@
+/* LD Portable – Radio */
+/* Radio */
+.ld-radio-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+  cursor: pointer;
+  display: inline-flex;
+  position: relative;
+}
+.ld-radio-label.ld-radio-checked {
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+}
+.ld-radio-label.ld-radio-disabled {
+  color: var(--ld-semantic-color-input-text-on-fill-disabled, #babbbe);
+  cursor: default;
+}
+
+.ld-radio-input {
+  -webkit-appearance: none; 
+  appearance: none;
+  cursor: pointer;
+  height: 1.5rem;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1.5rem;
+}
+.ld-radio-input:disabled {
+  cursor: default;
+}
+
+.ld-radio-radioInput {
+  box-sizing: border-box;
+  color: var(--ld-semantic-color-input-text-on-fill, #2e2f32);
+  display: block;
+  flex: none;
+  height: 1.5rem;
+  pointer-events: none;
+  width: 1.5rem;
+  z-index: 1;
+}
+
+.ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill, #ffffff);
+  r: calc(0.75rem - 0.0625rem / 2);
+  stroke: var(--ld-semantic-color-input-border, #2e2f32);
+  stroke-width: 0.0625rem;
+}
+.ld-radio-checked .ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill-activated, #2e2f32);
+  r: calc(0.75rem - 0.125rem / 2);
+  stroke: var(--ld-semantic-color-input-border-activated, #2e2f32);
+  stroke-width: 0.125rem;
+}
+.ld-radio-label:hover .ld-radio-radioInputOuter, .ld-radio-label.hover .ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill-hovered, #f1f1f2);
+  r: calc(0.75rem - 0.125rem / 2);
+  stroke: var(--ld-semantic-color-input-border-hovered, #2e2f32);
+  stroke-width: 0.125rem;
+}
+.ld-radio-input:focus ~ .ld-radio-radioInput .ld-radio-radioInputOuter, .ld-radio-label.focus .ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill-hovered, #f1f1f2);
+  r: calc(0.75rem - 0.125rem / 2);
+  stroke: var(--ld-semantic-color-input-border-focused, #2e2f32);
+  stroke-width: 0.125rem;
+}
+.ld-radio-label:active .ld-radio-radioInputOuter, .ld-radio-label.active .ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill-pressed, #e3e4e5) !important;
+  r: calc(0.75rem - 0.125rem / 2);
+  stroke: var(--ld-semantic-color-input-border-pressed, #2e2f32);
+  stroke-width: 0.125rem;
+}
+.ld-radio-label:not(.ld-radio-checked).ld-radio-disabled .ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill-disabled, #ffffff) !important;
+  r: calc(0.75rem - 0.0625rem / 2) !important;
+  stroke: var(--ld-semantic-color-input-border-disabled, #babbbe) !important;
+  stroke-width: 0.0625rem !important;
+}
+.ld-radio-checked:hover .ld-radio-radioInputOuter, .ld-radio-checked.hover .ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill-activated-hovered, #3a3b3e);
+  r: calc(0.75rem - 0.125rem / 2);
+  stroke: var(--ld-semantic-color-input-border-activated, #2e2f32);
+  stroke-width: 0.125rem;
+}
+.ld-radio-checked .ld-radio-input:focus ~ .ld-radio-radioInput .ld-radio-radioInputOuter, .ld-radio-checked.focus .ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill-activated-hovered, #3a3b3e);
+  r: calc(0.75rem - 0.125rem / 2);
+  stroke: var(--ld-semantic-color-input-border-activated, #2e2f32);
+  stroke-width: 0.125rem;
+}
+.ld-radio-checked:active .ld-radio-radioInputOuter, .ld-radio-checked.active .ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill-activated-pressed, #46474a) !important;
+  r: calc(0.75rem - 0.125rem / 2) !important;
+  stroke: var(--ld-semantic-color-input-border-activated, #2e2f32) !important;
+  stroke-width: 0.125rem !important;
+}
+.ld-radio-disabled.ld-radio-checked .ld-radio-radioInputOuter, .ld-radio-disabled.ld-radio-checked.active .ld-radio-radioInputOuter {
+  fill: var(--ld-semantic-color-input-fill-activated-disabled, #babbbe) !important;
+  r: calc(0.75rem - 0.125rem / 2) !important;
+  stroke: var(--ld-semantic-color-input-border-activated-disabled, #babbbe) !important;
+  stroke-width: 0.125rem !important;
+}
+
+.ld-radio-radioInputInner {
+  fill: #00000000;
+  r: 0.25rem;
+}
+.ld-radio-checked .ld-radio-radioInputInner {
+  fill: var(--ld-semantic-color-input-indicator-activated, #ffffff);
+}
+.ld-radio-radioInputInner {
+
+}
+.ld-radio-checked:hover .ld-radio-radioInputInner, .ld-radio-checked.hover .ld-radio-radioInputInner {
+  fill: var(--ld-semantic-color-input-indicator-activated, #ffffff);
+}
+.ld-radio-checked .ld-radio-input:focus ~ .ld-radio-radioInput .ld-radio-radioInputInner, .ld-radio-checked.focus .ld-radio-radioInputInner {
+  fill: var(--ld-semantic-color-input-indicator-activated, #ffffff);
+}
+.ld-radio-checked:active .ld-radio-radioInputInner, .ld-radio-checked.active .ld-radio-radioInputInner {
+  fill: var(--ld-semantic-color-input-indicator-activated, #ffffff) !important;
+}
+.ld-radio-disabled.ld-radio-checked .ld-radio-radioInputInner {
+  fill: var(--ld-semantic-color-input-indicator-activated, #ffffff) !important;
+}
+
+.ld-radio-labelText {
+  margin-left: 0.75rem;
+  align-self: center;
+}

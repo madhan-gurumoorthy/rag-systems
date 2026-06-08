@@ -1,0 +1,898 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "MatBot Agent Factory",
+		"description": "Config-driven multi-agent runtime — drop an SOP Pack, get a deployable agent.",
+		"version": "1.0.0"
+	},
+	"paths": {
+		"/a2a/invoke": {
+			"post": {
+				"tags": [
+					"invoke"
+				],
+				"summary": "Invoke",
+				"description": "Synchronous invocation entry point.\n\nRoutes to the work-item pipeline by default; callers wanting chat\nmust set ``kind=\"chat\"``; approval callbacks are inferred from the\npayload shape (or set explicitly via ``kind=\"approval_callback\"``).",
+				"operationId": "invoke_a2a_invoke_post",
+				"parameters": [
+					{
+						"name": "X-Calling-Agent",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-Calling-Agent"
+						}
+					},
+					{
+						"name": "traceparent",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "Traceparent"
+						}
+					},
+					{
+						"name": "X-Session-ID",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-Session-Id"
+						}
+					},
+					{
+						"name": "X-Message-ID",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-Message-Id"
+						}
+					},
+					{
+						"name": "X-User-ID",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-User-Id"
+						}
+					},
+					{
+						"name": "X-Tenant-Id",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-Tenant-Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/InvokeRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/a2a/invoke-stream": {
+			"post": {
+				"tags": [
+					"invoke"
+				],
+				"summary": "Invoke Stream",
+				"description": "Streaming variant — ``kind=\"chat\"`` yields per-chunk SSE events;\n``work_item`` / ``approval_callback`` emit a single ``result`` event\nfollowed by ``done`` so the stream contract stays uniform across kinds.",
+				"operationId": "invoke_stream_a2a_invoke_stream_post",
+				"parameters": [
+					{
+						"name": "X-Calling-Agent",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-Calling-Agent"
+						}
+					},
+					{
+						"name": "traceparent",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "Traceparent"
+						}
+					},
+					{
+						"name": "X-Session-ID",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-Session-Id"
+						}
+					},
+					{
+						"name": "X-Message-ID",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-Message-Id"
+						}
+					},
+					{
+						"name": "X-User-ID",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-User-Id"
+						}
+					},
+					{
+						"name": "X-Tenant-Id",
+						"in": "header",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "X-Tenant-Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/InvokeRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response"
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/a2a/work-item/{external_ref}": {
+			"get": {
+				"tags": [
+					"work_item"
+				],
+				"summary": "Work Item Status",
+				"description": "Return the cached run-status snapshot for a work item.\n\nLooked up via ``(pack_id, external_ref)`` against the active pack\nso a polling caller sees the same answer the next POST would\nreturn.  ``status`` is derived from the row's ``status`` column +\na freshness check on ``run_deadline_at``: a row that's still\n``running`` past its deadline is surfaced as ``stale`` so callers\ncan act on worker death without a heartbeat channel.\n\nReturns ``404`` when no work_item row exists for the active pack\nand external_ref.",
+				"operationId": "work_item_status_a2a_work_item__external_ref__get",
+				"parameters": [
+					{
+						"name": "external_ref",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "External Ref"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/webhooks/slack/events": {
+			"post": {
+				"tags": [
+					"webhooks"
+				],
+				"summary": "Webhook Slack Events",
+				"description": "Handle Slack Events API webhooks (URL verification and event dispatch).",
+				"operationId": "webhook_slack_events_webhooks_slack_events_post",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/.well-known/agents.json": {
+			"get": {
+				"tags": [
+					"factory"
+				],
+				"summary": "Get Agent Card",
+				"description": "Serve the A2A agent card for discovery.",
+				"operationId": "get_agent_card__well_known_agents_json_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/factory/health": {
+			"get": {
+				"tags": [
+					"factory"
+				],
+				"summary": "Factory Health",
+				"description": "Return health/status for all loaded SOP Packs.",
+				"operationId": "factory_health_api_factory_health_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/factory/tools": {
+			"get": {
+				"tags": [
+					"factory"
+				],
+				"summary": "Factory Tools",
+				"description": "Return tool availability report for a pack.",
+				"operationId": "factory_tools_api_factory_tools_get",
+				"parameters": [
+					{
+						"name": "pack_id",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "Pack Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/pack/info": {
+			"get": {
+				"tags": [
+					"factory"
+				],
+				"summary": "Pack Info",
+				"description": "Return metadata about the currently loaded SOP Pack.",
+				"operationId": "pack_info_api_pack_info_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/healthz": {
+			"get": {
+				"tags": [
+					"health"
+				],
+				"summary": "Healthz",
+				"description": "Consolidated liveness endpoint.",
+				"operationId": "healthz_healthz_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HealthResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/readyz": {
+			"get": {
+				"tags": [
+					"health"
+				],
+				"summary": "Readyz",
+				"description": "Kubernetes readiness check.",
+				"operationId": "readyz_readyz_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ReadinessResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/dashboard/summary": {
+			"get": {
+				"tags": [
+					"dashboard"
+				],
+				"summary": "Dashboard Summary",
+				"description": "Return top-line counters across the three canonical tables.",
+				"operationId": "dashboard_summary_api_dashboard_summary_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/dashboard/sessions": {
+			"get": {
+				"tags": [
+					"dashboard"
+				],
+				"summary": "Dashboard Sessions",
+				"description": "List sessions (newest first) with work-item and event counts.",
+				"operationId": "dashboard_sessions_api_dashboard_sessions_get",
+				"parameters": [
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 100,
+							"title": "Limit"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/dashboard/session/{session_id}": {
+			"get": {
+				"tags": [
+					"dashboard"
+				],
+				"summary": "Dashboard Session Detail",
+				"description": "Drill-down view: session row + its work_items + its events.",
+				"operationId": "dashboard_session_detail_api_dashboard_session__session_id__get",
+				"parameters": [
+					{
+						"name": "session_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Session Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/dashboard": {
+			"get": {
+				"tags": [
+					"dashboard"
+				],
+				"summary": "Dashboard Page",
+				"description": "Serve the single-page observability dashboard.",
+				"operationId": "dashboard_page_dashboard_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"text/html": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"HTTPValidationError": {
+				"properties": {
+					"detail": {
+						"items": {
+							"$ref": "#/components/schemas/ValidationError"
+						},
+						"type": "array",
+						"title": "Detail"
+					}
+				},
+				"type": "object",
+				"title": "HTTPValidationError"
+			},
+			"HealthResponse": {
+				"properties": {
+					"status": {
+						"type": "string",
+						"pattern": "^(healthy|unhealthy|degraded)$",
+						"title": "Status",
+						"description": "Overall health status",
+						"example": "healthy"
+					},
+					"timestamp": {
+						"type": "string",
+						"title": "Timestamp",
+						"description": "Health check timestamp in ISO format",
+						"example": "2025-09-16T10:30:45.123Z"
+					},
+					"rag_ready": {
+						"type": "boolean",
+						"title": "Rag Ready",
+						"description": "Whether RAG system is initialized and ready"
+					},
+					"postgres_ready": {
+						"type": "boolean",
+						"title": "Postgres Ready",
+						"description": "Whether PostgreSQL database is available"
+					},
+					"redis_ready": {
+						"type": "boolean",
+						"title": "Redis Ready",
+						"description": "Whether Redis cache is available"
+					},
+					"version": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Version",
+						"description": "Service version",
+						"default": "1.0.0"
+					},
+					"dependencies": {
+						"anyOf": [
+							{
+								"additionalProperties": true,
+								"type": "object"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Dependencies",
+						"description": "Detailed dependency status information"
+					}
+				},
+				"type": "object",
+				"required": [
+					"status",
+					"timestamp",
+					"rag_ready",
+					"postgres_ready",
+					"redis_ready"
+				],
+				"title": "HealthResponse",
+				"description": "Response model for health check endpoint.\n\nPurpose:\n- Provides overall service health status\n- Includes dependency health information\n- Used by /healthz endpoint\n- Enables monitoring and alerting systems\n\nFields:\n- status: Overall health status\n- timestamp: When the health check was performed\n- rag_ready: Whether RAG system is initialized\n- postgres_ready: Whether PostgreSQL is available\n- redis_ready: Whether Redis is available\n- version: Service version information",
+				"example": {
+					"dependencies": {
+						"lightrag": {
+							"last_check": "2025-09-16T10:30:40Z",
+							"status": "healthy"
+						},
+						"postgres": {
+							"connections": 5,
+							"status": "healthy"
+						},
+						"redis": {
+							"memory_usage": "45%",
+							"status": "healthy"
+						}
+					},
+					"postgres_ready": true,
+					"rag_ready": true,
+					"redis_ready": true,
+					"status": "healthy",
+					"timestamp": "2025-09-16T10:30:45.123Z",
+					"version": "1.0.0"
+				}
+			},
+			"InvokeRequest": {
+				"properties": {
+					"input": {
+						"title": "Input",
+						"description": "Inbound payload — any JSON-shaped value (str, dict, list, scalar).  Dict-shaped input is treated as the upstream domain_payload verbatim; non-dict input is flattened into work_item_text."
+					},
+					"session_id": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Session Id",
+						"description": "Conversation/thread identifier.  Falls back to the X-Session-ID header, then to a generated id."
+					},
+					"agent_id": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Agent Id",
+						"description": "Target pack id.  When unset, the active pack from the registry is used."
+					},
+					"kind": {
+						"anyOf": [
+							{
+								"type": "string",
+								"enum": [
+									"work_item",
+									"approval_callback",
+									"chat"
+								]
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Kind",
+						"description": "Hint for routing inside the framework.  When unset, the dispatcher infers the kind from the input shape."
+					},
+					"metadata": {
+						"anyOf": [
+							{
+								"additionalProperties": true,
+								"type": "object"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Metadata",
+						"description": "Free-form context (trace ids, calling-agent tags, etc.).  Stored on the work_item / session domain_data."
+					}
+				},
+				"type": "object",
+				"required": [
+					"input"
+				],
+				"title": "InvokeRequest",
+				"description": "Accept-any-input request — `input` may be a str, dict, list, or scalar.  The default example is a `kind=\"chat\"` invocation with a free-form query string.  For `kind=\"work_item\"` send the upstream record as a dict (e.g. `{\"external_ref\": \"INC52148837\", ...}`); for `kind=\"approval_callback\"` send `{\"external_ref\": \"...\", \"approved\": true, ...}`.  When `kind` is omitted the dispatcher infers it from the input shape.",
+				"example": {
+					"input": "What are the steps to triage a checkout latency spike?",
+					"kind": "chat",
+					"session_id": "sess_abc123"
+				}
+			},
+			"ReadinessResponse": {
+				"properties": {
+					"status": {
+						"type": "string",
+						"pattern": "^(ready|not_ready)$",
+						"title": "Status",
+						"description": "Readiness status",
+						"example": "ready"
+					},
+					"timestamp": {
+						"type": "string",
+						"title": "Timestamp",
+						"description": "Readiness check timestamp in ISO format",
+						"example": "2025-09-16T10:30:45.123Z"
+					},
+					"ready": {
+						"type": "boolean",
+						"title": "Ready",
+						"description": "Boolean indicating if service is ready to accept traffic"
+					},
+					"blocking_dependencies": {
+						"anyOf": [
+							{
+								"items": {},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Blocking Dependencies",
+						"description": "List of dependencies preventing readiness"
+					},
+					"details": {
+						"anyOf": [
+							{
+								"additionalProperties": true,
+								"type": "object"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Details",
+						"description": "Additional readiness check details"
+					}
+				},
+				"type": "object",
+				"required": [
+					"status",
+					"timestamp",
+					"ready"
+				],
+				"title": "ReadinessResponse",
+				"description": "Response model for readiness check endpoint.\n\nPurpose:\n- Indicates if service is ready to accept traffic\n- Used by Kubernetes readiness probes\n- More strict than health checks\n- Used by /readyz endpoint\n\nFields:\n- status: Readiness status\n- timestamp: When the readiness check was performed\n- ready: Boolean indicating if service is ready\n- blocking_dependencies: List of dependencies preventing readiness",
+				"example": {
+					"blocking_dependencies": [],
+					"details": {
+						"database_connection_pool": "healthy",
+						"rag_initialization_time": 12.5
+					},
+					"ready": true,
+					"status": "ready",
+					"timestamp": "2025-09-16T10:30:45.123Z"
+				}
+			},
+			"ValidationError": {
+				"properties": {
+					"loc": {
+						"items": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "integer"
+								}
+							]
+						},
+						"type": "array",
+						"title": "Location"
+					},
+					"msg": {
+						"type": "string",
+						"title": "Message"
+					},
+					"type": {
+						"type": "string",
+						"title": "Error Type"
+					}
+				},
+				"type": "object",
+				"required": [
+					"loc",
+					"msg",
+					"type"
+				],
+				"title": "ValidationError"
+			}
+		}
+	}
+}

@@ -1,0 +1,13 @@
+QUERY RESULT
+═══════════════════════════════════════════
+
+Offer: {{ external_ref }}
+Node: {{ node_id | default("N/A — national query") }}
+SOP: {{ query_intent | default("general_query") }}
+Tools executed: {{ tools_executed | default("") }}
+
+{{ tool_results_verbatim | default("") }}
+
+Status: ANSWERED
+Slack Summary: ✅ *ANSWERED* — inventory data returned for {{ external_ref }}
+═══════════════════════════════════════════

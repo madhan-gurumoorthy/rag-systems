@@ -1,0 +1,746 @@
+# Tool Manifest — Wakanda Inventory SOP Agent
+#
+# All tools are read-only diagnostics. No write operations, no approval gates.
+#
+# Config references:
+#   {{KEY}} in url_template/headers/body_template resolve from Dynaconf secrets.toml.
+#   Auth credentials ALWAYS come from secrets.toml — never in this file.
+
+tools:
+
+  # ── DIAG-GLI-01: Global Inventory via Oasis API ───────────────────
+  - id: DIAG-GLI-01
+    type: http_api
+    description: >
+      Retrieve national-level inventory for an offer via the Oasis API (Customer GLI).
+      Returns customer_gli, sellable quantities, availability type, and node-level
+      summary. Called first in OOS national and full-health SOPs.
+    expose_as_skill: true
+    skill_tags: [inventory, oasis, national]
+    skill_examples:
+      - "Show customer GLI for offer 16C5E955309331BCB53AD26DE761B8B3."
+      - "What is the national inventory for offer 16C5E955309331BCB53AD26DE761B8B3?"
+    url_template: "{{OASIS_API_URL}}"
+    method: POST
+    headers:
+      WM_CONSUMER.ID: "{{OASIS_CONSUMER_ID}}"
+      WM_CONSUMER.COUNTRY.CODE: "{{OASIS_CONSUMER_COUNTRY_CODE}}"
+      WM_QOS.CORRELATION_ID: "{{_request_id}}"
+      WM_SVC.NAME: "{{OASIS_SVC_NAME}}"
+      WM_SVC.ENV: "{{OASIS_SVC_ENV}}"
+      WM_SVC.VERSION: "{{OASIS_SVC_VERSION}}"
+      WM_BU.ID: "{{OASIS_BU_ID}}"
+      WM_KEY.VERSION: "{{OASIS_KEY_VERSION}}"
+      WM_AUTH.SIGNATURE: "{{OASIS_AUTH_SIGNATURE}}"
+      Content-Type: "application/json"
+    body_template:
+      payload:
+        - offerId: "{{ offer_id }}"
+          sellerId: ""
+          nodeGroups: []
+          nodes: []
+          preferredStores: []
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        "401": "AUTH_ERROR"
+        "403": "AUTH_ERROR"
+        "500": "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-NODE-01: Node Inventory Snapshot ─────────────────────────
+  - id: DIAG-NODE-01
+    type: python_function
+    description: >
+      Get inventory snapshot for an offer at a specific fulfilment node (store, DC, FC).
+      Queries BigQuery killmonger + mbaku tables. Accepts store: prefix for store numbers;
+      store:N is converted to node 999900000 + N automatically.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_node_inventory"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: node_id
+        type: str
+        required: true
+        description: "Node/store ID. Prefix store numbers with 'store:' (e.g. store:100)"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-RES-01: Node-Level Reservations ──────────────────────────
+  - id: DIAG-RES-01
+    type: python_function
+    description: >
+      Get open reservations for an offer at a specific fulfilment node.
+      Queries killmonger_current_reservation. Returns up to 5 rows inline;
+      larger result sets yield a GCS signed download URL.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_node_reservations"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: node_id
+        type: str
+        required: true
+        description: "Node/store ID. Prefix store numbers with 'store:' (e.g. store:100)"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-EI-01: Enterprise Inventory Comparison ───────────────────
+  - id: DIAG-EI-01
+    type: python_function
+    description: >
+      Compare Wakanda inventory with Enterprise Inventory (EI) for an offer at a node.
+      Routes to the appropriate EI table by node type (DC/FC/STORE/DSV/MARKETPLACE).
+      Returns both Wakanda and EI quantities with a mismatch flag.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_ei_inventory"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: node_id
+        type: str
+        required: true
+        description: "Node ID. Prefix store numbers with 'store:' (e.g. store:100)"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-PATH-01: Path Eligibility / Access Modes ─────────────────
+  - id: DIAG-PATH-01
+    type: python_function
+    description: >
+      Get path eligibility (accModes / accessModesVp) for an offer at a node.
+      Returns regular eligibility and VirtualPack eligibility with a plain-English summary.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_path_eligibility"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: node_id
+        type: str
+        required: true
+        description: "Node/store ID. Prefix store numbers with 'store:' (e.g. store:100)"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-LOCK-01: Node Lock Details ───────────────────────────────
+  - id: DIAG-LOCK-01
+    type: python_function
+    description: >
+      Get active inventory lock details for an offer at a specific node.
+      Queries the lock field in the killmonger_snapshot BigQuery table.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_node_lock_details"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: node_id
+        type: str
+        required: true
+        description: "Node/store ID. Prefix store numbers with 'store:' (e.g. store:100)"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-BULK-01: Offer-Level Nodes Inventory ─────────────────────
+  - id: DIAG-BULK-01
+    type: python_function
+    description: >
+      Get inventory across all fulfilment nodes mapped to an offer.
+      Returns a node summary table; large result sets produce a GCS signed URL.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_offer_level_nodes_inventory"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 60
+
+  # ── DIAG-EVENT-01: Event Inventory Validation ─────────────────────
+  - id: DIAG-EVENT-01
+    type: python_function
+    description: >
+      Validate inventory for a list of offers within a specific event window. 
+      ALWAYS pass ALL offer_ids in a SINGLE call — never call this tool once per offer. Writes results to BigQuery and returns a per-offer 
+      summary with a GCS signed URL for the full CSV report.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_event_inventory"
+    params:
+      - name: offer_ids
+        type: list
+        required: true
+        description: "List of 32-character hex Offer IDs. Pass ALL offer IDs together in one call; do not loop and call this tool per-offer."
+      - name: event_id
+        type: str
+        required: false
+        default: ""
+        description: "Event identifier"
+      - name: event_type
+        type: str
+        required: false
+        default: ""
+        description: "Event type (e.g. FLASH_SALE, ROLLBACK)"
+      - name: start_time
+        type: str
+        required: false
+        default: ""
+        description: "Event window start (ISO-8601)"
+      - name: end_time
+        type: str
+        required: false
+        default: ""
+        description: "Event window end (ISO-8601)"
+      - name: limit
+        type: int
+        required: false
+        default: 100
+        description: "Maximum rows to return inline"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 120
+
+  # ── DIAG-ORDER-01: Order Status ───────────────────────────────────
+  - id: DIAG-ORDER-01
+    type: python_function
+    description: >
+      Get order status and fulfillment details for a specific reservation.
+      Queries the BigQuery reservation table for the given offer+node+order triple.
+    expose_as_skill: true
+    skill_tags: [order, reservation, bigquery]
+    skill_examples:
+      - "What is the status of order 1234567 for offer 16C5E955309331BCB53AD26DE761B8B3 at node 10001275070?"
+      - "Check reservation details for order 1234567."
+    import: "packs.wakanda_sop_agent.inventory_tools:get_order_status"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: node_id
+        type: str
+        required: true
+        description: "Node/store ID. Prefix store numbers with 'store:' (e.g. store:100)"
+      - name: order_id
+        type: str
+        required: true
+        description: "Order ID"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-CAP-01: Sales Cap Details ────────────────────────────────
+  - id: DIAG-CAP-01
+    type: python_function
+    description: >
+      Get active salescap details for one or more offers, optionally scoped to a node.
+      Identifies zero-quantity hard blocks and exhausted caps restricting availability.
+    expose_as_skill: true
+    skill_tags: [salescap, blocker, bigquery]
+    skill_examples:
+      - "Are there any salescaps blocking offer 16C5E955309331BCB53AD26DE761B8B3?"
+      - "Show active sales caps for offer 16C5E955309331BCB53AD26DE761B8B3 at node 10001275070."
+    import: "packs.wakanda_sop_agent.inventory_tools:get_salescap_details"
+    params:
+      - name: offer_ids
+        type: list
+        required: true
+        description: "List of 32-character hex Offer IDs"
+      - name: node_id
+        type: str
+        required: false
+        default: ""
+        description: "Optional node ID to scope salescap query"
+      - name: cap_type
+        type: str
+        required: false
+        default: ""
+        description: "Optional cap type filter"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-TRANS-01: Transactability Diagnosis ──────────────────────
+  - id: DIAG-TRANS-01
+    type: python_function
+    description: >
+      Diagnose why an offer is out of stock or not transactable.
+      Internally routes based on node_id presence:
+        node_id provided → node-level diagnosis (killmonger + mbaku BigQuery)
+        node_id absent   → national-level diagnosis (national carrier + salescaps)
+      Node-level checks: feed_qty, sellable ATS, locks, eligibility, preorder.
+      National-level checks: NC feed, S2S feed, salescaps, backorders, national ATS.
+    expose_as_skill: true
+    skill_tags: [oos, transactability, diagnosis]
+    skill_examples:
+      - "Why is offer 16C5E955309331BCB53AD26DE761B8B3 out of stock at node 10001275070?"
+      - "Diagnose national transactability for offer 16C5E955309331BCB53AD26DE761B8B3."
+    import: "packs.wakanda_sop_agent.inventory_tools:diagnose_transactability"
+    params:
+      - name: offer_ids
+        type: list
+        required: true
+        description: "List of 32-character hex Offer IDs"
+      - name: node_id
+        type: str
+        required: false
+        default: ""
+        description: "Node/store ID (omit for national-level diagnosis). Prefix store numbers with 'store:'"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-TRANS-NAT-01: National Transactability Diagnosis ─────────
+  - id: DIAG-TRANS-NAT-01
+    type: python_function
+    description: >
+      Run a national-level transactability diagnosis for an offer.
+      Checks National Carrier feed, S2S feed quantities, active salescaps
+      (zero-quantity hard blocks and exhausted caps), backorders, and national ATS.
+      Called explicitly in OOS national and full-health SOPs.
+    import: "packs.wakanda_sop_agent.inventory_tools:diagnose_national_transactability"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-OFFRES-01: Offer-Level Reservations ──────────────────────
+  - id: DIAG-OFFRES-01
+    type: python_function
+    description: >
+      Get offer-level reservations and backorders from mbaku_current_reservation.
+      query_type controls what is returned: "both" (default), "current", or "historical".
+      Large result sets produce a GCS signed URL.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_offer_reservations"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: query_type
+        type: str
+        required: false
+        default: "both"
+        description: "Filter: 'both' | 'current' | 'historical'"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-HIST-01: Offer Inventory History ─────────────────────────
+  - id: DIAG-HIST-01
+    type: python_function
+    description: >
+      Get historical inventory timeline for an offer across all nodes.
+      Queries BigQuery wildcard date-partitioned tables.
+      Accepts a relative day window (days) or an explicit start_date/end_date range.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_offer_history_inventory"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: days
+        type: int
+        required: false
+        default: 7
+        description: "Relative lookback in days (used when start_date/end_date are absent)"
+      - name: start_date
+        type: str
+        required: false
+        default: ""
+        description: "Explicit window start (YYYY-MM-DD)"
+      - name: end_date
+        type: str
+        required: false
+        default: ""
+        description: "Explicit window end (YYYY-MM-DD)"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 60
+
+  # ── DIAG-NODEHIST-01: Node Inventory History ──────────────────────
+  - id: DIAG-NODEHIST-01
+    type: python_function
+    description: >
+      Get historical feed quantity and eligibility changes for an offer at a specific node.
+      Queries BigQuery date-partitioned tables. Accepts relative days or explicit date range.
+      filter_sections controls which sections to include in the response.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_offer_node_inventory_history"
+    params:
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: node_id
+        type: str
+        required: true
+        description: "Node/store ID. Prefix store numbers with 'store:' (e.g. store:100)"
+      - name: days
+        type: int
+        required: false
+        default: 7
+        description: "Relative lookback in days"
+      - name: start_date
+        type: str
+        required: false
+        default: ""
+        description: "Explicit window start (YYYY-MM-DD)"
+      - name: end_date
+        type: str
+        required: false
+        default: ""
+        description: "Explicit window end (YYYY-MM-DD)"
+      - name: sections
+        type: str
+        required: false
+        default: "all"
+        description: >
+          Controls which sections to include. MUST be set based on user intent:
+          "inventory" → feed quantity history only (user asks for inventory/feed history).
+          "eligibility" → eligibility history only (user asks for eligibility history).
+          "all" → both sections (default, for general history requests).
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 60
+
+  # ── DIAG-FEED-01: Check Feed Qty Update ───────────────────────────
+  - id: DIAG-FEED-01
+    type: python_function
+    description: >
+      Verify whether a submitted feed's quantity update has been processed and
+      recorded in Wakanda's Killmonger historic tables for a given offer-node.
+      Accepts a feed ID (format <batchId>@<recordId>), offer ID, and node ID.
+      Strips the @<shard> suffix from stored batch/record identifiers before
+      comparing. Returns all matching event + snapshot records when found.
+      If no match is found, prompts the user to verify the feed ID and offer-node.
+    expose_as_skill: true
+    skill_tags: [feed, qty, killmonger, bigquery]
+    skill_examples:
+      - "Has feed 18B150F08D8B5508AA71313FD6CB5AAA@AQkBCgA updated quantity for offer 16C5E955309331BCB53AD26DE761B8B3 at node 10001275070?"
+      - "Verify whether my feed batch was processed for this offer-node."
+    import: "packs.wakanda_sop_agent.inventory_tools:check_feed_qty_update"
+    params:
+      - name: feed_id
+        type: str
+        required: true
+        description: "Feed batch ID in <batchId>@<recordId> format. E.g. 18B150F08D8B5508AA71313FD6CB5AAA@AQkBCgA"
+      - name: offer_id
+        type: str
+        required: true
+        description: "32-character hex Offer ID"
+      - name: node_id
+        type: str
+        required: true
+        description: "Fulfillment node ID (numeric string, e.g. 10001275070)"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 60
+
+  # ── DIAG-PREORDER-01: Preorder Eligibility ────────────────────────
+  - id: DIAG-PREORDER-01
+    type: python_function
+    description: >
+      Get preorder eligibility and release date for an offer from the mbaku snapshot table.
+      Returns isPreOrderEligible (true/false) and releaseDate for the given offer_id.
+      Use for any user query asking whether an offer is a preorder item or when its
+      release date is.
+    import: "packs.wakanda_sop_agent.inventory_tools:get_preorder_info"
+    params:
+      - name: offer_ids
+        type: list
+        required: true
+        description: "List of 32-character hex Offer IDs"
+    response:
+      processor: passthrough
+      outcome_rules:
+        - when: "data"
+          outcome: "DATA_FOUND"
+        - when: ""
+          outcome: "DATA_NOT_FOUND"
+      error_outcomes:
+        default: "API_ERROR"
+      include_raw: false
+    risk: low
+    requires_approval: false
+    timeout_seconds: 30
+
+  # ── DIAG-DECISION-MATRIX: SOP Verdict ─────────────────────────────
+  - id: DIAG-DECISION-MATRIX
+    type: decision_matrix
+    description: >
+      Maps SOP diagnostic tool outcomes to a runbook card.
+      First-match wins across decision_rules.
+      decision_error_codes (AUTH_ERROR, API_ERROR) bypass rules and trigger the
+      decision_fallback; the Decision Agent then applies ESCALATE verdict.
+      When no rule matches and no error code is present (all DATA_NOT_FOUND),
+      decision_fallback returns RBK-WAK-02 and the agent applies INSUFFICIENT_DATA.
+    params:
+      - name: observations
+        type: str
+        required: true
+        description: "JSON-encoded dict mapping tool-id to outcome code"
+    decision_rules:
+      - id: "RULE-GLI-FOUND"
+        conditions:
+          DIAG-GLI-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "GLI returned data — offer is visible nationally"
+      - id: "RULE-NODE-FOUND"
+        conditions:
+          DIAG-NODE-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Node inventory returned data — offer visible at node"
+      - id: "RULE-TRANS-FOUND"
+        conditions:
+          DIAG-TRANS-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Transactability diagnosis returned data"
+      - id: "RULE-TRANS-NAT-FOUND"
+        conditions:
+          DIAG-TRANS-NAT-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "National transactability diagnosis returned data"
+      - id: "RULE-CAP-FOUND"
+        conditions:
+          DIAG-CAP-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Sales cap data found — cap details answerable"
+      - id: "RULE-OFFRES-FOUND"
+        conditions:
+          DIAG-OFFRES-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Offer-level reservations found"
+      - id: "RULE-ORDER-FOUND"
+        conditions:
+          DIAG-ORDER-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Order status data found"
+      - id: "RULE-EVENT-FOUND"
+        conditions:
+          DIAG-EVENT-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Event inventory data found"
+      - id: "RULE-HIST-FOUND"
+        conditions:
+          DIAG-HIST-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Offer history data found"
+      - id: "RULE-RES-FOUND"
+        conditions:
+          DIAG-RES-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Node reservations found (node_reservations SOP)"
+      - id: "RULE-EI-FOUND"
+        conditions:
+          DIAG-EI-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Enterprise inventory comparison data found (ei_comparison SOP)"
+      - id: "RULE-PATH-FOUND"
+        conditions:
+          DIAG-PATH-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Path eligibility data found (path_eligibility SOP)"
+      - id: "RULE-LOCK-FOUND"
+        conditions:
+          DIAG-LOCK-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Node lock details found (lock_details SOP)"
+      - id: "RULE-BULK-FOUND"
+        conditions:
+          DIAG-BULK-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Offer-level nodes inventory data found (bulk_nodes SOP)"
+      - id: "RULE-NODEHIST-FOUND"
+        conditions:
+          DIAG-NODEHIST-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Node inventory history data found (node_history SOP)"
+      - id: "RULE-PREORDER-FOUND"
+        conditions:
+          DIAG-PREORDER-01: "DATA_FOUND"
+        runbook: "RBK-WAK-01"
+        description: "Preorder eligibility and release date found (preorder_info SOP)"
+    decision_fallback:
+      runbook: "RBK-WAK-02"
+      description: "No tool returned DATA_FOUND — insufficient data or unhandled state"
+    decision_error_codes:
+      - "AUTH_ERROR"
+      - "API_ERROR"
+      - "SERVICE_ERROR"
+    risk: low

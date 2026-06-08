@@ -1,0 +1,36 @@
+{
+  "name": "gif_tote_validation_agent",
+  "description": "Autonomous GIF Tote incident resolution — dimension validation, routing, merchant outreach.",
+  "version": "1.0.0",
+  "protocol": "a2a",
+  "endpoints": {
+    "invoke": "/a2a/invoke",
+    "invoke_stream": "/a2a/invoke-stream",
+    "incident_invoke": "/a2a/incident/invoke",
+    "health": "/healthz",
+    "readiness": "/readyz",
+    "factory_health": "/api/factory/health",
+    "factory_tools": "/api/factory/tools"
+  },
+  "capabilities": [
+    "chat",
+    "incident_automation",
+    "streaming",
+    "servicenow_webhook",
+    "slack_integration"
+  ],
+  "supported_tool_types": [
+    "python_function",
+    "http_api",
+    "sql_query",
+    "bigquery_query",
+    "batch",
+    "a2a",
+    "graphql",
+    "cassandra",
+    "redis",
+    "jira",
+    "kafka",
+    "elasticsearch"
+  ]
+}

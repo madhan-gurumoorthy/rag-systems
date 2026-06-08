@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OL Triage — Test UI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --surface: #1a1d2e; --surface2: #232640;
+      --border: #2e3250; --accent: #4f8ef7; --accent2: #7c5af7;
+      --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
+      --gray: #8892a4; --text: #e2e8f0; --text-dim: #94a3b8;
+      --mono: 'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+    }
+    body { background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+    header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 2rem; height:56px; display:flex; align-items:center; gap:.75rem; }
+    header .logo { width:30px; height:30px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:15px; }
+    header h1 { font-size:1rem; font-weight:600; }
+    header nav { margin-left:auto; display:flex; gap:.5rem; }
+    header nav a { color:var(--gray); font-size:.78rem; text-decoration:none; padding:4px 10px; border-radius:6px; border:1px solid transparent; transition:all .15s; }
+    header nav a:hover, header nav a.active { color:var(--accent); border-color:var(--border); }
+    #dot { width:8px; height:8px; border-radius:50%; background:var(--gray); display:inline-block; }
+    #dot.ok { background:var(--green); }
+    #status-txt { font-size:.75rem; color:var(--gray); margin-left:6px; }
+
+    main { flex:1; display:grid; grid-template-columns:360px 1fr; overflow:hidden; height:calc(100vh - 56px); }
+
+    .left { background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow-y:auto; }
+    .sec { padding:1.1rem 1.4rem; border-bottom:1px solid var(--border); }
+    .sec h2 { font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--gray); margin-bottom:.9rem; }
+
+    label { display:block; font-size:.78rem; color:var(--text-dim); margin-bottom:3px; margin-top:10px; }
+    label:first-of-type { margin-top:0; }
+    input, textarea, select { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:7px; color:var(--text); font-family:var(--mono); font-size:.82rem; padding:7px 10px; outline:none; transition:border-color .15s; }
+    input:focus, textarea:focus, select:focus { border-color:var(--accent); }
+    textarea { resize:vertical; min-height:72px; }
+
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:8px 16px; border-radius:7px; border:none; cursor:pointer; font-size:.82rem; font-weight:500; transition:opacity .15s, transform .1s; }
+    .btn:active { transform:scale(.97); }
+    .btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; width:100%; }
+    .btn-secondary { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); font-size:.75rem; }
+    .btn:disabled { opacity:.4; cursor:not-allowed; }
+
+    .demo-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+
+    .mode-tabs { display:flex; gap:4px; }
+    .mode-tab { flex:1; padding:6px 0; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text-dim); font-size:.78rem; cursor:pointer; text-align:center; transition:all .15s; }
+    .mode-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+    .right { display:flex; flex-direction:column; overflow:hidden; }
+    .tabs { display:flex; background:var(--surface); border-bottom:1px solid var(--border); padding:0 1.5rem; }
+    .tab { padding:.65rem .9rem; font-size:.78rem; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; transition:all .15s; }
+    .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+    .pane { flex:1; overflow-y:auto; padding:1.5rem; display:none; }
+    .pane.active { display:block; }
+
+    .report-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.25rem; font-family:var(--mono); font-size:.8rem; line-height:1.75; white-space:pre-wrap; word-break:break-word; }
+    .v-valid { color:var(--green); } .v-invalid { color:var(--red); } .v-partial { color:var(--yellow); } .v-cannot { color:var(--gray); }
+
+    .empty { text-align:center; padding:4rem 2rem; color:var(--gray); }
+    .empty .icon { font-size:2.5rem; opacity:.35; margin-bottom:.75rem; }
+    .empty p { font-size:.82rem; }
+
+    .log-entry { display:flex; gap:9px; padding:7px 0; border-bottom:1px solid var(--border); font-size:.8rem; animation:fadein .2s; }
+    .log-entry:last-child { border:none; }
+    @keyframes fadein { from{opacity:0;transform:translateY(3px)} to{opacity:1} }
+    .log-ic { flex-shrink:0; width:20px; height:20px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:11px; }
+    .ic-start { background:rgba(79,142,247,.15); color:var(--accent); }
+    .ic-tool { background:rgba(124,90,247,.15); color:var(--accent2); }
+    .ic-result { background:rgba(34,197,94,.12); color:var(--green); }
+    .ic-done { background:rgba(34,197,94,.15); color:var(--green); }
+    .ic-err { background:rgba(239,68,68,.15); color:var(--red); }
+    .log-body { flex:1; min-width:0; }
+    .log-time { font-family:var(--mono); color:var(--gray); font-size:.7rem; }
+    .log-msg { margin-top:1px; }
+    .log-detail { font-family:var(--mono); font-size:.7rem; color:var(--gray); margin-top:2px; white-space:pre-wrap; word-break:break-all; }
+
+    .eval-result { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .eval-header { padding:.9rem 1.2rem; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:.75rem; }
+    .verdict-badge { padding:3px 10px; border-radius:20px; font-size:.72rem; font-weight:600; font-family:var(--mono); }
+    .vb-listed { background:rgba(34,197,94,.2); color:var(--green); }
+    .vb-valid { background:rgba(34,197,94,.2); color:var(--green); }
+    .vb-invalid { background:rgba(239,68,68,.2); color:var(--red); }
+    .vb-partial { background:rgba(245,158,11,.2); color:var(--yellow); }
+    .vb-cannot { background:rgba(136,146,164,.15); color:var(--gray); }
+    .eval-body { padding:1.2rem; }
+    .eval-kv { display:grid; grid-template-columns:160px 1fr; gap:4px 12px; font-size:.8rem; margin-bottom:.75rem; }
+    .eval-k { color:var(--text-dim); }
+    .eval-v { font-family:var(--mono); color:var(--text); word-break:break-all; }
+    .rule-block { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:.9rem; margin-top:.75rem; }
+    .rule-title { font-size:.78rem; font-weight:600; margin-bottom:.5rem; }
+    .conditions-table { width:100%; border-collapse:collapse; font-size:.72rem; font-family:var(--mono); }
+    .conditions-table th { color:var(--gray); text-align:left; padding:3px 6px; border-bottom:1px solid var(--border); }
+    .conditions-table td { padding:4px 6px; border-bottom:1px solid rgba(46,50,80,.6); }
+    .conditions-table tr:last-child td { border:none; }
+    .pass { color:var(--green); } .fail { color:var(--red); } .skip { color:var(--yellow); }
+
+    .spinner { display:inline-block; width:13px; height:13px; border:2px solid rgba(79,142,247,.3); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js" integrity="sha512-Y1p/STLW/B+l+MPJ5K5OdILMwJa2gMFXXmC/qsyDuGH9uc1MZMUo6/8YQUg9Ut4ns8KGCrCtt+58UwmNFFiVvA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<header>
+  <div class="logo">🔍</div>
+  <h1>OL Triage — Test UI</h1>
+  <span id="dot"></span><span id="status-txt">connecting...</span>
+  <nav>
+    <a href="/ol/ui" class="active">Triage</a>
+    <a href="/ol/session">Session Dashboard</a>
+  </nav>
+</header>
+
+<main>
+  <!-- ── Left Panel ─────────────────────────────────── -->
+  <div class="left">
+
+    <div class="sec">
+      <h2>Mode</h2>
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="mt-invoke" onclick="setMode('invoke')">🤖 Invoke (LLM)</button>
+        <button class="mode-tab" id="mt-evaluate" onclick="setMode('evaluate')">⚙️ Evaluate (No LLM)</button>
+        <button class="mode-tab" id="mt-a2a" onclick="setMode('a2a')">🔗 A2A</button>
+      </div>
+    </div>
+
+    <!-- INVOKE inputs -->
+    <div class="sec" id="invoke-inputs">
+      <h2>Query</h2>
+      <label>Natural language question</label>
+      <textarea id="query" rows="3" placeholder="Why is offer BAAE6381D66B46B4BEF630E09D90DB25 delisted at store 295?"></textarea>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div>
+          <label>Offer ID (optional shortcut)</label>
+          <input id="q-offer" type="text" placeholder="32-char hex ID" />
+        </div>
+        <div>
+          <label>Store ID</label>
+          <input id="q-store" type="text" placeholder="e.g. 295" />
+        </div>
+      </div>
+      <label style="margin-top:10px">
+        <input type="checkbox" id="stream-chk" checked style="margin-right:5px" />
+        Streaming mode (SSE)
+      </label>
+    </div>
+
+    <!-- EVALUATE inputs -->
+    <div class="sec" id="evaluate-inputs" style="display:none">
+      <h2>Deterministic Evaluate</h2>
+      <label>Offer ID</label>
+      <input id="e-offer" type="text" placeholder="32-char hex offer ID" />
+      <label>Store ID</label>
+      <input id="e-store" type="text" placeholder="e.g. 295" />
+      <label>Mart ID</label>
+      <input id="e-mart" type="text" value="0" />
+    </div>
+
+    <!-- A2A inputs -->
+    <div class="sec" id="a2a-inputs" style="display:none">
+      <h2>A2A Invoke</h2>
+      <label>Kind</label>
+      <select id="a2a-kind">
+        <option value="work_item">work_item — full pipeline + pre-triage</option>
+        <option value="chat">chat — retrieval / conversational</option>
+      </select>
+      <label>Input (string or JSON object)</label>
+      <textarea id="a2a-input" rows="4" placeholder='Why is offer BAAE6381D66B46B4BEF630E09D90DB25 delisted at store 295?&#10;&#10;— or —&#10;&#10;{"external_ref":"INC123","store_id":"295"}'></textarea>
+      <label>Agent ID <span style="color:var(--gray)">(optional — targets a specific pack)</span></label>
+      <input id="a2a-agent-id" type="text" placeholder="e.g. ol_triage  (leave blank for default pack)" />
+    </div>
+
+    <div class="sec">
+      <button class="btn btn-primary" id="run-btn" onclick="run()">
+        <span id="run-icon">▶</span> Run
+      </button>
+    </div>
+
+    <div class="sec">
+      <h2>Demo Scenarios</h2>
+      <div class="demo-grid">
+        <button class="btn btn-secondary" onclick="demo('listed')">✅ Listed</button>
+        <button class="btn btn-secondary" onclick="demo('delist_192')">❌ Rule 192</button>
+        <button class="btn btn-secondary" onclick="demo('delist_59')">❌ Rule 59</button>
+        <button class="btn btn-secondary" onclick="demo('multi')">⚠️ Multi-rule</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Last Session</h2>
+      <div style="font-family:var(--mono);font-size:.72rem;color:var(--gray)" id="last-session">—</div>
+      <button class="btn btn-secondary" style="margin-top:8px;width:100%" onclick="openSession()">View Session Dashboard →</button>
+    </div>
+
+  </div>
+
+  <!-- ── Right Panel ────────────────────────────────── -->
+  <div class="right">
+    <div class="tabs">
+      <div class="tab active" id="tab-report" onclick="tab('report')">📋 Report</div>
+      <div class="tab" id="tab-log" onclick="tab('log')">⚡ Log <span id="log-badge"></span></div>
+      <div class="tab" id="tab-raw" onclick="tab('raw')">{ } Raw</div>
+    </div>
+
+    <div class="pane active" id="pane-report">
+      <div class="empty" id="ph-report"><div class="icon">🔍</div><p>Run a triage or evaluate request to see results.</p></div>
+      <pre class="report-card" id="report-out" style="display:none"></pre>
+      <div id="eval-out" style="display:none"></div>
+    </div>
+    <div class="pane" id="pane-log">
+      <div class="empty" id="ph-log"><div class="icon">⚡</div><p>Tool calls and agent steps will appear here.</p></div>
+      <div id="log-out"></div>
+    </div>
+    <div class="pane" id="pane-raw">
+      <div class="empty" id="ph-raw"><div class="icon">{ }</div><p>Raw API response will appear here.</p></div>
+      <pre class="report-card" id="raw-out" style="display:none;color:var(--gray)"></pre>
+    </div>
+  </div>
+</main>
+
+<script>
+const B = window.location.origin;
+let mode = 'invoke';
+let lastSessionId = null;
+let logCnt = 0;
+
+// ── Health check ──
+async function ping() {
+  try {
+    const r = await fetch(`${B}/api/factory/health`);
+    const d = r.ok ? await r.json() : null;
+    const dot = document.getElementById('dot');
+    const txt = document.getElementById('status-txt');
+    if (r.ok) { dot.className='ok'; txt.textContent='healthy'; }
+    else { txt.textContent='degraded'; }
+  } catch { document.getElementById('status-txt').textContent='offline'; }
+}
+
+// ── Mode toggle ──
+function setMode(m) {
+  mode = m;
+  document.getElementById('invoke-inputs').style.display = m==='invoke' ? '' : 'none';
+  document.getElementById('evaluate-inputs').style.display = m==='evaluate' ? '' : 'none';
+  document.getElementById('a2a-inputs').style.display = m==='a2a' ? '' : 'none';
+  document.getElementById('mt-invoke').classList.toggle('active', m==='invoke');
+  document.getElementById('mt-evaluate').classList.toggle('active', m==='evaluate');
+  document.getElementById('mt-a2a').classList.toggle('active', m==='a2a');
+}
+
+// ── Demos ──
+const DEMOS = {
+  listed:     { q:'Check offer C78905A4B3AC3F41907C1017CB62D421 at store 1758', o:'C78905A4B3AC3F41907C1017CB62D421', s:'1758' },
+  delist_192: { q:'Why is offer BAAE6381D66B46B4BEF630E09D90DB25 delisted at store 295?', o:'BAAE6381D66B46B4BEF630E09D90DB25', s:'295' },
+  delist_59:  { q:'Triage offer BAAE6381D66B46B4BEF630E09D90DB25 store 100 — missing dates?', o:'BAAE6381D66B46B4BEF630E09D90DB25', s:'100' },
+  multi:      { q:'Full triage BAAE6381D66B46B4BEF630E09D90DB25 store 295 all rules', o:'BAAE6381D66B46B4BEF630E09D90DB25', s:'295' },
+};
+function demo(k) {
+  const d = DEMOS[k]; if (!d) return;
+  document.getElementById('query').value = d.q;
+  document.getElementById('q-offer').value = d.o;
+  document.getElementById('q-store').value = d.s;
+  document.getElementById('e-offer').value = d.o;
+  document.getElementById('e-store').value = d.s;
+}
+
+// ── Tabs ──
+function tab(t) {
+  ['report','log','raw'].forEach(x => {
+    document.getElementById(`pane-${x}`).classList.toggle('active', x===t);
+    document.getElementById(`tab-${x}`).classList.toggle('active', x===t);
+  });
+  if (t==='log') document.getElementById('log-badge').textContent='';
+}
+
+// ── Log helpers ──
+function resetUI() {
+  logCnt = 0;
+  document.getElementById('log-out').innerHTML = '';
+  document.getElementById('ph-log').style.display = '';
+  document.getElementById('report-out').style.display = 'none';
+  document.getElementById('eval-out').style.display = 'none';
+  document.getElementById('ph-report').style.display = '';
+  document.getElementById('ph-report').innerHTML = '<div class="icon"><div class="spinner"></div></div><p>Running...</p>';
+  document.getElementById('raw-out').style.display = 'none';
+  document.getElementById('ph-raw').style.display = '';
+}
+function addLog(type, msg, detail='') {
+  document.getElementById('ph-log').style.display = 'none';
+  const icons = {start:'▶', tool:'⚡', result:'✓', done:'✅', error:'✗'};
+  const cls = {tool_start:'ic-tool', tool_result:'ic-result', done:'ic-done', error:'ic-err', start:'ic-start', log:'ic-start'}[type]||'ic-start';
+  const ic = icons[{tool_start:'tool',tool_result:'result',done:'done',error:'error',start:'start',log:'start'}[type]||'start']||'·';
+  const el = document.createElement('div'); el.className='log-entry';
+  el.innerHTML=`<div class="log-ic ${cls}">${ic}</div><div class="log-body"><div class="log-time">${new Date().toISOString().slice(11,23)}</div><div class="log-msg">${esc(msg)}</div>${detail?`<div class="log-detail">${esc(detail)}</div>`:''}</div>`;
+  document.getElementById('log-out').appendChild(el);
+  logCnt++;
+  if (!document.getElementById('tab-log').classList.contains('active'))
+    document.getElementById('log-badge').textContent=` (${logCnt})`;
+  el.scrollIntoView({block:'end'});
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showRaw(d){ const el=document.getElementById('raw-out'); el.style.display='block'; document.getElementById('ph-raw').style.display='none'; el.textContent=JSON.stringify(d,null,2); }
+function showReport(txt){
+  document.getElementById('ph-report').style.display='none';
+  document.getElementById('report-out').style.display='block';
+  document.getElementById('eval-out').style.display='none';
+  document.getElementById('report-out').innerHTML = DOMPurify.sanitize(esc(txt)
+    .replace(/✅ VALID DELIST[^\n]*/g, m=>`<span class="v-valid">${m}</span>`)
+    .replace(/❌ INVALID DELIST[^\n]*/g, m=>`<span class="v-invalid">${m}</span>`)
+    .replace(/⚠️ PARTIAL DELIST[^\n]*/g, m=>`<span class="v-partial">${m}</span>`)
+    .replace(/🚫 CANNOT EVALUATE[^\n]*/g, m=>`<span class="v-cannot">${m}</span>`)
+    .replace(/✅ LISTED[^\n]*/g, m=>`<span class="v-valid">${m}</span>`));
+}
+
+// ── Evaluate render ──
+function showEval(d) {
+  document.getElementById('ph-report').style.display='none';
+  document.getElementById('report-out').style.display='none';
+  const el = document.getElementById('eval-out');
+  el.style.display='block';
+  const v = d.overall_verdict || d.listing_status || '?';
+  const vcls = {LISTED:'vb-listed',ALL_VALID:'vb-valid',HAS_INVALID:'vb-invalid',PARTIAL:'vb-partial',CANNOT_EVALUATE:'vb-cannot'}[v]||'vb-cannot';
+  const vicon = {LISTED:'✅',ALL_VALID:'✅',HAS_INVALID:'❌',PARTIAL:'⚠️',CANNOT_EVALUATE:'🚫'}[v]||'?';
+  let html = `<div class="eval-result">
+    <div class="eval-header">
+      <span class="verdict-badge ${vcls}">${vicon} ${v}</span>
+      <span style="font-family:var(--mono);font-size:.78rem;color:var(--text-dim)">
+        ${d.offer_id||''} @ Store ${d.store_id||''}
+      </span>
+      <span style="margin-left:auto;font-size:.72rem;color:var(--gray)">${(d.time_taken||0).toFixed(2)}s</span>
+    </div>
+    <div class="eval-body">
+      <div class="eval-kv">
+        <span class="eval-k">Listing Status</span><span class="eval-v">${d.listing_status||'—'}</span>
+        <span class="eval-k">Mart ID</span><span class="eval-v">${d.mart_id||'—'}</span>
+        <span class="eval-k">Matched Rules</span><span class="eval-v">${(d.matched_rule_ids||[]).join(', ')||'—'}</span>
+        <span class="eval-k">Reason Codes</span><span class="eval-v">${(d.reason_codes||[]).join(', ')||'—'}</span>
+      </div>`;
+
+  (d.rule_verdicts||[]).forEach(rv => {
+    const vc = {VALID:'pass',INVALID:'fail',PARTIAL:'skip',CANNOT_EVALUATE:'skip'}[rv.verdict]||'skip';
+    html += `<div class="rule-block">
+      <div class="rule-title">Rule ${rv.rule_id} — ${esc(rv.rule_name||'')} &nbsp; <span class="${vc}">${rv.verdict}</span></div>
+      <div style="font-size:.72rem;color:var(--gray);margin-bottom:.5rem">${esc(rv.rule_group||'')} · ${esc(rv.reason_code||'')}</div>
+      <table class="conditions-table">
+        <thead><tr><th>#</th><th>Entry</th><th>Operator</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead>
+        <tbody>`;
+    (rv.per_condition_results||[]).forEach(c => {
+      const r = c.condition_passed===true?`<span class="pass">✅ PASS</span>`:c.condition_passed===false?`<span class="fail">❌ FAIL</span>`:`<span class="skip">⚠ SKIP</span>`;
+      html += `<tr><td>${esc(c.name||'')}</td><td>${esc(c.entry||'')}</td><td>${esc(c.operator||'')}</td><td>${esc(String(c.expected_fact??''))}</td><td>${esc(String(c.resolved_value??'null'))}</td><td>${r}</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  });
+
+  html += `</div></div>`;
+  el.innerHTML = DOMPurify.sanitize(html);
+}
+
+// ── Run ──
+async function run() {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  document.getElementById('run-icon').innerHTML = '<div class="spinner"></div>';
+  resetUI();
+  try {
+    if (mode === 'evaluate') await runEvaluate();
+    else if (mode === 'a2a') await runA2A();
+    else if (document.getElementById('stream-chk').checked) await runStream();
+    else await runSync();
+  } finally {
+    btn.disabled = false;
+    document.getElementById('run-icon').textContent = '▶';
+  }
+}
+
+function buildQuery() {
+  const q = document.getElementById('query').value.trim();
+  if (q) return q;
+  const o = document.getElementById('q-offer').value.trim();
+  const s = document.getElementById('q-store').value.trim();
+  return (o && s) ? `Triage offer ${o} at store ${s}` : '';
+}
+
+async function runStream() {
+  const q = buildQuery(); if (!q) { alert('Enter a query.'); return; }
+  const sid = crypto.randomUUID();
+  lastSessionId = sid;
+  document.getElementById('last-session').textContent = sid.slice(0,8)+'…';
+  let full='';
+  addLog('start','Stream connected — agent starting');
+  try {
+    const res = await fetch(`${B}/ol/invoke-stream`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q,session_id:sid}) });
+    const reader = res.body.getReader(); const dec = new TextDecoder(); let buf='';
+    while(true){
+      const {done,value}=await reader.read(); if(done)break;
+      buf += dec.decode(value,{stream:true});
+      const lines=buf.split('\n'); buf=lines.pop();
+      for(const ln of lines){
+        if(!ln.startsWith('data: '))continue;
+        try{
+          const ev=JSON.parse(ln.slice(6)); const d=ev.data||{};
+          switch(ev.event){
+            case 'log': addLog('log',d.message||''); break;
+            case 'tool_start': addLog('tool_start',d.message||`Calling ${d.tool}`,d.tool); tab('log'); break;
+            case 'tool_result': addLog('tool_result',`${d.tool} returned`,d.preview); break;
+            case 'chunk': full+=d.content||''; showReport(full); tab('report'); break;
+            case 'done':
+              if(d.response)full=d.response;
+              showReport(full); addLog('done','Analysis complete');
+              showRaw({session_id:d.session_id,response_length:full.length});
+              tab('report'); break;
+            case 'error': addLog('error',`Error: ${d.error}`); break;
+          }
+        }catch{}
+      }
+    }
+  }catch(e){ addLog('error',e.message); }
+}
+
+async function runSync() {
+  const q = buildQuery(); if (!q) { alert('Enter a query.'); return; }
+  const sid = crypto.randomUUID();
+  lastSessionId = sid;
+  document.getElementById('last-session').textContent = sid.slice(0,8)+'…';
+  addLog('start','Sending request…');
+  try {
+    const r = await fetch(`${B}/ol/invoke`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,session_id:sid})});
+    const d = await r.json();
+    if(d.error){addLog('error',d.error);return;}
+    addLog('done',`Done in ${(d.time_taken||0).toFixed(2)}s`);
+    showReport(d.response||''); showRaw(d); tab('report');
+  }catch(e){addLog('error',e.message);}
+}
+
+async function runEvaluate() {
+  const o=document.getElementById('e-offer').value.trim();
+  const s=document.getElementById('e-store').value.trim();
+  const m=document.getElementById('e-mart').value.trim()||'0';
+  if(!o||!s){alert('Enter offer ID and store ID.');return;}
+  addLog('start',`Evaluating offer ${o.slice(0,8)}… @ store ${s}`);
+  try{
+    const r=await fetch(`${B}/ol/evaluate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({offer_id:o,store_id:s,mart_id:m})});
+    const d=await r.json();
+    if(d.error){addLog('error',d.error);return;}
+    addLog('done',`${d.overall_verdict||d.listing_status} in ${(d.time_taken||0).toFixed(2)}s`);
+    showEval(d); showRaw(d); tab('report');
+  }catch(e){addLog('error',e.message);}
+}
+
+async function runA2A() {
+  const kind    = document.getElementById('a2a-kind').value;
+  const raw     = document.getElementById('a2a-input').value.trim();
+  const agentId = document.getElementById('a2a-agent-id').value.trim();
+  if (!raw) { alert('Enter input.'); return; }
+  let input;
+  try { input = JSON.parse(raw); } catch { input = raw; }
+  const sid = crypto.randomUUID();
+  lastSessionId = sid;
+  document.getElementById('last-session').textContent = sid.slice(0,8)+'…';
+  const body = { input, kind, session_id: sid };
+  if (agentId) body.agent_id = agentId;
+  addLog('start', `POST /a2a/invoke — kind=${kind}`);
+  try {
+    const r = await fetch(`${B}/a2a/invoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    showRaw(d);
+    if (d.error) { addLog('error', d.error); return; }
+    const resp     = d.response || '';
+    const status   = d.status   || d.kind || '';
+    const duration = (d.time_taken || 0).toFixed(2);
+    addLog('done', `${status} — ${duration}s`);
+    if (resp) {
+      showReport(resp); tab('report');
+    } else if (r.status === 202) {
+      showReport(
+        `⏳ Running in background\n\n` +
+        `external_ref : ${d.external_ref || '—'}\n` +
+        `deadline_at  : ${d.deadline_at  || '—'}\n\n` +
+        `Poll GET /a2a/work-item/${d.external_ref || '…'} for the result.`
+      );
+      tab('report');
+    } else {
+      showReport(JSON.stringify(d, null, 2)); tab('raw');
+    }
+  } catch(e) { addLog('error', e.message); }
+}
+
+function openSession() {
+  if(lastSessionId) window.open(`/ol/session?id=${lastSessionId}`,'_blank');
+  else window.open('/ol/session','_blank');
+}
+
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter')run();});
+ping(); setInterval(ping,30000);
+</script>
+</body>
+</html>

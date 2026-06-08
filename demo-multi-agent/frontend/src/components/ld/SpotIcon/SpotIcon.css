@@ -1,0 +1,28 @@
+/* LD Portable – SpotIcon */
+/* SpotIcon */
+.ld-spoticon-spotIcon {
+  align-items: center;
+  border-radius: 62.5rem;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.ld-spoticon-brand {
+  background: var(--ld-semantic-color-fill-accent-blue-subtle, #e9f1fe);
+  color: var(--ld-semantic-color-text-on-fill-accent-blue-subtle, #114ab6);
+}
+
+.ld-spoticon-neutral {
+  background: var(--ld-semantic-color-surface, #ffffff);
+  color: var(--ld-semantic-color-text, #2e2f32);
+}
+
+.ld-spoticon-large {
+  height: 3.5rem;
+  width: 3.5rem;
+}
+
+.ld-spoticon-small {
+  height: 3rem;
+  width: 3rem;
+}

@@ -1,0 +1,332 @@
+# Offer Intelligence Pack
+#
+# Combined Offer Listing (delist) verification + Offer Publish
+# (unpublish reason-code) validation for Walmart 1P offers.  Both
+# checks are read-only diagnostics; the pack performs no catalog
+# writes.
+#
+# Routing is owned by the TriageAgent and lives in the ``check_mode``
+# state slot:
+#
+#   * ``ol_only``      — caller supplied ``store_id`` → run only
+#                        DIAG-OL-TRIAGE-01.
+#   * ``publish_only`` — no ``store_id`` and the prompt did NOT ask
+#                        for both checks → run only
+#                        DIAG-VALIDATE-OFFER-01.
+#   * ``both``         — prompt explicitly asks for delist + publish
+#                        verification → run BOTH tools.
+#
+# Model credentials live in
+# ``agent_factory/infrastructure/secrets.toml`` under
+# ``[default.azure_chat]`` — NOT in this file.
+
+id: offer_intelligence
+name: Offer Intelligence — Listing & Unpublish Verification
+version: 1.0.0
+description: >
+  Deterministic Offer Listing (OL) delist verification and Offer
+  Publish unpublish reason-code validation in a single pack.  For an
+  (offer_id, store_id) pair, evaluates the matched OL delist rules
+  against IQS/SIV, Uber Mappings/Keys, Offer RT, Product Store, Item
+  Pricing Setup, Merloc, Oasis Inventory and HAT Path.  For an
+  offer_id alone, fans out across IQS / CASTAR / Oasis / Offer Store /
+  Product Matching / Product Store / Uber Keys to validate every
+  active unpublish reason code.  Verdicts are routed by a decision
+  matrix to verdict-keyed closure templates.
+owner_team: AI Operations - Catalog
+tenant_id: walmart-aiops-catalog
+default: false
+decision_engine: yaml_rules
+
+# ── LLM config ──────────────────────────────────────────────────
+model:
+  provider: azure_openai
+  deployment: gpt-4o
+  max_tokens: 4096
+  temperature: 0.0
+  extra_params: {}
+
+# ── Pre-triage gate ─────────────────────────────────────────────
+# Disabled — callers invoke this pack explicitly with offer_id (and
+# optionally store_id).  There is no upstream ticket fetch.
+pre_triage:
+  enabled: false
+
+rules_engine: {}
+
+rag:
+  domain: offer_intelligence
+  rag_query_prefix: ""
+  prompt_template: ""
+
+# ── Display labels ──────────────────────────────────────────────
+display:
+  tool_names:
+    diag_ol_triage_01: "OL Triage Engine"
+    diag_ol_render_report_01: "OL Triage Report Renderer"
+    diag_validate_offer_01: "Offer Unpublish Validator"
+    diag_decision_matrix: "Decision Matrix"
+  outcome_labels:
+    # OL listing
+    OL_LISTED: "Offer is currently LISTED at this store"
+    OL_ALL_VALID: "DELISTED — all rules VALID (delist is correct)"
+    OL_HAS_INVALID: "DELISTED — at least one rule INVALID (wrongful delist)"
+    OL_PARTIAL: "DELISTED — partial evaluation (skipped fields on critical path)"
+    OL_CANNOT_EVALUATE: "Cannot evaluate — all required fields unsupported"
+    OL_LISTING_UNKNOWN: "OL API returned UNKNOWN listing status"
+    OL_NO_MATCHED_RULES: "DELISTED but no matched rule IDs returned"
+    # Unpublish validation
+    VALID: "Correctly unpublished ✅"
+    INVALID: "Wrongly unpublished ❌"
+    NEEDS_MANUAL_REVIEW: "Needs manual review 🛠️"
+    NOT_IMPLEMENTED: "Validator not yet implemented 🚧"
+    NO_REVIEW_REQUIRED: "No review required ✅"
+    UNKNOWN_REASON: "Unknown reason code ❓"
+    OFFER_PUBLISHED: "Offer is currently PUBLISHED"
+    OFFER_NOT_FOUND: "Offer not found"
+    API_ERROR: "Upstream API error"
+
+# ── Resolution status mapping ──────────────────────────────────
+resolution_statuses:
+  statuses:
+    resolved: "resolved"
+    correctly_unpublished: "correctly_unpublished"
+    wrongly_unpublished: "wrongly_unpublished"
+    needs_manual_review: "needs_manual_review"
+    pending_review: "pending_review"
+    escalated: "escalated"
+    no_action: "no_action"
+  closure_pattern: '^[\s\-\*>#]*\**\s*status:\s*\**\s*(.+?)[\s\*]*$'
+  default_status: "resolved"
+
+safety_net_overrides: []
+safety_net_dimension_checks: []
+
+# ── Triage extraction (deterministic) ──────────────────────────
+# The TriageAgent prompt sets ``check_mode`` (ol_only / publish_only /
+# both) based on whether ``store_id`` is present and whether the user
+# prompt explicitly asks for both checks.
+triage_extraction:
+  external_ref_pattern: "([A-Za-z0-9]{32})"
+  fields:
+    - name: offer_id
+      aliases: ["OfferId", "Offer ID", "offer_id", "OFFER_ID", "DotcomOfferId", "DOTCOM_OFFER_ID"]
+      required: true
+    - name: store_id
+      aliases: ["StoreId", "Store ID", "store_id", "STORE_ID", "storeNumber"]
+      required: false
+    - name: mart_id
+      aliases: ["MartId", "Mart ID", "mart_id", "MART_ID"]
+      required: false
+    - name: item_id
+      aliases: ["ItemId", "Item ID", "item_id", "ITEM_ID", "USItemId", "WPID"]
+      required: false
+    - name: reason_code
+      aliases: ["Reason Code", "reason_code", "unpublish reason"]
+      required: false
+    - name: check_mode
+      aliases: ["check_mode", "mode"]
+      required: false
+  symptom_rules:
+    - symptom: ol_delist_verification
+      keywords: ["delist", "delisted", "listing status", "ol triage", "verify listing", "store"]
+    - symptom: offer_unpublish_validation
+      keywords: ["unpublished", "unpublish", "reason code", "validate offer", "offer validation", "publish status"]
+    - symptom: offer_intelligence_full
+      keywords: ["both", "delist and publish", "publish and delist", "full check", "everything", "all checks"]
+  default_symptom: offer_intelligence_full
+
+# ── Evidence extraction ─────────────────────────────────────────
+evidence_extraction:
+  defaults: {}
+  rules:
+    # OL triage evidence
+    - field: listing_status
+      tool_match: ol_triage
+      preview_keys: ["listing_status"]
+    - field: overall_verdict
+      tool_match: ol_triage
+      preview_keys: ["overall_verdict"]
+    - field: matched_rule_ids
+      tool_match: ol_triage
+      preview_keys: ["matched_rule_ids"]
+    - field: reason_codes
+      tool_match: ol_triage
+      preview_keys: ["reason_codes"]
+    - field: rendered_report
+      tool_match: ol_triage
+      preview_keys: ["rendered_report"]
+    # Unpublish validation evidence
+    - field: publish_status
+      tool_match: validate_offer
+      preview_keys: ["publish_status"]
+    - field: audit_history
+      tool_match: validate_offer
+      preview_keys: ["audit_history"]
+    - field: reason_codes_checked
+      tool_match: validate_offer
+      preview_keys: ["reason_codes_checked"]
+    - field: validation_results
+      tool_match: validate_offer
+      preview_keys: ["results"]
+    - field: validation_summary
+      tool_match: validate_offer
+      preview_keys: ["summary"]
+
+# ── Closure templates + verdict inference ──────────────────────
+# The decision matrix emits a runbook card; verdict_inference maps the
+# card / keyword set back to a verdict, and template_map routes the
+# verdict to a Jinja2 closure template under templates/.
+closure_templates:
+  verdict_field: verdict
+  template_map:
+    # OL listing verdicts
+    LISTED: closure_listed.j2
+    ALL_VALID: closure_all_valid.j2
+    HAS_INVALID: closure_has_invalid.j2
+    PARTIAL: closure_partial.j2
+    CANNOT_EVALUATE: closure_cannot_evaluate.j2
+    # Unpublish verdicts
+    VALID: closure_valid.j2
+    INVALID: closure_invalid.j2
+    NEEDS_REVIEW: closure_needs_review.j2
+  default_template: closure_default.j2
+  fallback_verdict: CANNOT_EVALUATE
+  verdict_inference:
+    # OL listing
+    - verdict: LISTED
+      runbook_keywords: ["OL_H1", "LISTED"]
+    - verdict: ALL_VALID
+      runbook_keywords: ["OL_H2", "ALL_VALID"]
+    - verdict: HAS_INVALID
+      runbook_keywords: ["OL_R1", "HAS_INVALID"]
+    - verdict: PARTIAL
+      runbook_keywords: ["OL_R2", "PARTIAL"]
+    - verdict: CANNOT_EVALUATE
+      runbook_keywords: ["OL_R3", "CANNOT_EVALUATE"]
+    # Unpublish validation
+    - verdict: VALID
+      runbook_keywords: ["OPV_H0", "OPV_H1", "CORRECTLY_UNPUBLISHED", "Valid ✅", "correctly unpublished"]
+    - verdict: INVALID
+      runbook_keywords: ["OPV_R1", "WRONGLY_UNPUBLISHED", "Invalid", "wrongly unpublished"]
+    - verdict: NEEDS_REVIEW
+      runbook_keywords: ["OPV_R2", "OPV_R3", "NEEDS_MANUAL_REVIEW", "NEEDS_REVIEW", "manual review", "🛠️"]
+  post_verdict_actions: []
+
+# ── Approved actions ────────────────────────────────────────────
+# Read-only by design — no post-approval write actions.
+approved_actions: []
+
+# ── Approval workflow ───────────────────────────────────────────
+# Disabled — pack performs read-only verification only.
+approval_workflow:
+  enabled: false
+
+# ── Slack notification config ──────────────────────────────────
+slack:
+  client_name: "offer-intelligence-agent"
+  client_version: "1.0.0"
+  thread_title_template: "🔍 Offer {external_ref} — Intelligence Check"
+  thread_title_fallback: "🔍 *{external_ref}* — Offer Intelligence"
+  notify_context_fields:
+    - label: "Offer ID"
+      raw_keys: ["offer_id", "external_ref"]
+    - label: "Store ID"
+      raw_keys: ["store_id"]
+    - label: "Check Mode"
+      raw_keys: ["check_mode"]
+    - label: "Listing Status"
+      raw_keys: ["listing_status"]
+    - label: "Publish Status"
+      raw_keys: ["publish_status"]
+
+# ── Runtime entry points ────────────────────────────────────────
+runtime:
+  state_schema: "packs.offer_intelligence.state:OfferIntelligenceState"
+  state_factory: "packs.offer_intelligence.state:empty_offer_intelligence_state"
+
+# ── Pipelines ───────────────────────────────────────────────────
+# Key must be ``incident`` — the runtime looks up the pipeline by this
+# canonical name regardless of pack domain.
+pipelines:
+  incident:
+    type: selector
+    max_turns: 20
+    termination_agent: ClosureAgent
+    selector_prompt: >
+      You are the orchestrator for the Offer Intelligence pipeline.
+      Select the NEXT agent strictly based on the pipeline stage.  Each
+      agent speaks ONCE.
+
+      PIPELINE ORDER (strictly sequential — never go backward):
+        1. TriageAgent     → extracts offer_id, store_id, mart_id,
+                              item_id, reason_code, and sets
+                              check_mode.  Goes FIRST and only once.
+        2. DiagnosticAgent → runs the tool(s) implied by check_mode:
+                              ol_only      → DIAG-OL-TRIAGE-01 (+ optional render)
+                              publish_only → DIAG-VALIDATE-OFFER-01
+                              both         → both tools
+                              Goes SECOND and only once.
+        3. DecisionAgent   → mapped deterministically by the runtime
+                              via DIAG-DECISION-MATRIX.  Goes THIRD
+                              and only once.
+        4. ActionAgent     → compiles findings into a structured
+                              per-check recommendation.  Goes FOURTH
+                              and only once.
+        5. ClosureAgent    → renders the verdict-keyed closure
+                              template and terminates.  Goes FIFTH
+                              (LAST).
+
+      RULES:
+        - NEVER select an agent that has already produced output.
+        - If DiagnosticAgent reports the offer is currently PUBLISHED
+          or LISTED, still pass through to DecisionAgent.
+        - After ClosureAgent speaks, the pipeline MUST end.
+    agents:
+      - name: TriageAgent
+        role: >
+          Extracts offer_id, store_id, mart_id, item_id, reason_code
+          and sets check_mode (ol_only | publish_only | both)
+        prompt_file: triage.j2
+        tools: []
+
+      - name: DiagnosticAgent
+        role: >
+          Runs DIAG-OL-TRIAGE-01 and/or DIAG-VALIDATE-OFFER-01 based
+          on check_mode
+        prompt_file: diagnostic.j2
+        tools:
+          - DIAG-OL-TRIAGE-01
+          - DIAG-OL-RENDER-REPORT-01
+          - DIAG-VALIDATE-OFFER-01
+
+      - name: DecisionAgent
+        role: Maps observations to the correct runbook card
+        prompt_file: decision.j2
+        tools:
+          - DIAG-DECISION-MATRIX
+
+      - name: ActionAgent
+        role: Compiles diagnostic findings into a structured recommendation
+        prompt_file: action.j2
+        tools: []
+
+      - name: ClosureAgent
+        role: Renders the closure template and closes the case
+        prompt_file: closure.j2
+        tools: []
+
+  retrieval:
+    type: round_robin
+    max_turns: 10
+    termination_agent: RetrievalAgent
+    agents:
+      - name: RetrievalAgent
+        role: >
+          Answers questions about offer listing status and unpublish
+          reason codes, and runs read-only diagnostics for offers
+        prompt_file: retrieval.j2
+        tools:
+          - DIAG-OL-TRIAGE-01
+          - DIAG-OL-RENDER-REPORT-01
+          - DIAG-VALIDATE-OFFER-01

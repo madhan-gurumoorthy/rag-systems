@@ -1,0 +1,41 @@
+# Policy Configuration — LIMO Online Eligibility Validation
+#
+# Read-only validation pack.  The only human-in-the-loop step is the
+# Slack intent-pick gate (MP / FC / WFS), which is a no-op action —
+# the resume_value carries the selected intent into state.intent and
+# the pipeline re-enters DiagnosticAgent.  No mutations are performed
+# on upstream systems.
+
+approvals:
+  required_for_cards: []
+  required_for_tools: []
+  approval_channel: "slack"
+  concord_entry_point: ""
+  timeout_minutes: 60
+  ad_group: ""
+
+blast_radius:
+  max_batch_size: 1
+  limits: {}
+
+permitted_actions:
+  - "Read-only ODIN offer lookup"
+  - "Read-only AURUM FC eligibility lookup"
+  - "Read-only DEW FC API lookup"
+  - "Read-only Wakanda Promise lookup"
+  - "Read-only Eligibility Consolidated FC lookup"
+  - "Read-only IQS SI, Shipnodes, DEW Seller, and DCC lookups"
+  - "Read-only seller enforcement and DEW restriction lookups"
+  - "Intent classification, sub-intent dispatch, and Slack HITL intent pick"
+  - "Eligibility analysis and reporting"
+
+denied_actions:
+  - "Modifying offer data"
+  - "Modifying node / FC data"
+  - "Updating downstream APIs"
+  - "Creating, updating, or deleting any upstream record"
+
+feature_flags:
+  enable_consolidated_call: true
+  enable_seller_enforcement: true
+  enable_dew_restriction: true

@@ -1,0 +1,102 @@
+/* LD Portable – WCPFlag */
+.ld-wcp-flag-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  min-height: 28px;
+  width: max-content;
+  border: 1.5px solid var(--flag-border, transparent);
+  background-color: var(--flag-bg);
+  color: var(--flag-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ld-wcp-flag-iconWrap {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--flag-icon-color, var(--flag-text));
+}
+
+.ld-wcp-flag-label {
+  display: block;
+}
+
+.ld-wcp-flag-holiday-restricted {
+  --flag-bg: var(--wcp-semantic-color-fill-holiday-restricted, #f1f1f2);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-holiday-restricted, #515357);
+  --flag-border: transparent;
+}
+
+.ld-wcp-flag-brand-subtle {
+  --flag-bg: var(--ld-semantic-color-fill-brand-subtle, #e9f1fe);
+  --flag-text: var(--ld-semantic-color-text-on-fill-brand-subtle, #004f9a);
+  --flag-border: transparent;
+}
+
+.ld-wcp-flag-scarcity {
+  --flag-bg: var(--wcp-semantic-color-fill-scarcity, #fef6de);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-scarcity, #662b0d);
+  --flag-border: transparent;
+}
+
+.ld-wcp-flag-savings-bold {
+  --flag-bg: var(--wcp-semantic-color-fill-savings-bold, #ea1100);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-savings-bold, #ffffff);
+  --flag-border: transparent;
+}
+
+.ld-wcp-flag-savings-subtle {
+  --flag-bg: var(--wcp-semantic-color-fill-savings-subtle, #ffffff);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-savings-subtle, #a20c00);
+  --flag-border: var(--wcp-semantic-color-border-savings-subtle, #a20c00);
+}
+
+.ld-wcp-flag-confidence-subtle {
+  --flag-bg: var(--wcp-semantic-color-fill-confidence-subtle, #e9f1fe);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-confidence-subtle, #002e99);
+  --flag-border: transparent;
+}
+
+.ld-wcp-flag-confidence-bold {
+  --flag-bg: var(--wcp-semantic-color-fill-confidence-bold, #0e002e);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-confidence-bold, #ffffff);
+  --flag-border: transparent;
+}
+
+.ld-wcp-flag-confidence-alt {
+  --flag-bg: var(--wcp-semantic-color-fill-confidence-alt, #001e60);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-confidence-alt, #ffffff);
+  --flag-icon-color: var(--wcp-semantic-color-icon-on-fill-confidence-alt, #ffc220);
+  --flag-border: transparent;
+}
+
+.ld-wcp-flag-confidence {
+  --flag-bg: var(--wcp-semantic-color-fill-confidence, #001e60);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-confidence, #ffffff);
+  --flag-border: transparent;
+}
+
+.ld-wcp-flag-holiday-member {
+  --flag-bg: var(--wcp-semantic-color-fill-holiday-member, #ffc220);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-holiday-member, #ffffff);
+  --flag-border: transparent;
+}
+
+.ld-wcp-flag-social {
+  --flag-bg: var(--wcp-semantic-color-fill-social, #ffffff);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-social, #0053e2);
+  --flag-border: var(--wcp-semantic-color-border-social, #0053e2);
+}
+
+.ld-wcp-flag-urgent {
+  --flag-bg: var(--wcp-semantic-color-fill-urgent, #fff200);
+  --flag-text: var(--wcp-semantic-color-text-on-fill-urgent, #2e2f32);
+  --flag-border: transparent;
+}

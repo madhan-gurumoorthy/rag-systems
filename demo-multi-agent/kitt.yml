@@ -1,0 +1,261 @@
+profiles:
+  - basic-docker-build
+  - stage-gates
+  - git://item-ops:matbot-multi-agents:main:kitt-stageGates
+  - test-executors-testhub
+
+managedNamespace:
+  apmId: "APM0019161"
+
+owner:
+  group: Hyperloop-monitoring
+
+notify:
+  slack:
+    channelName: matbot-kitt-agent-factory
+
+alerts:
+  slackChannel:
+    - matbot-kitt-agent-factory
+
+setup:
+  featureFlagMap:
+    enableIstioSidecar: true
+    useArtifactory: true
+    buildWhenStageRefMatches: false
+  releaseRefs: ["main", "branch"]
+  # Pipeline trigger. Each pack child declares narrower changePaths.
+  changePaths:
+    - packs/
+    - agent_factory/
+    - storage/
+    - app.py
+    - requirements.txt
+    - Dockerfile
+    - frontend/
+
+# Parent: builds the shared `matbot-multi-agents` image, deploys the
+# devops_health_check pack, and triggers pack children via postBuild.deployApp.
+# Each deployApp call passes tag: "" so the child reuses the image built here.
+#
+# Secrets: parent mounts /etc/secrets/secrets-common.toml; pack children
+# layer secrets-pack.toml on top. settings.py merges via Dynaconf.
+build:
+  artifact: matbot-multi-agents
+  docker:
+    app:
+      dockerFile: Dockerfile
+      buildArgs:
+        basePythonOSVersion: 3.12.13
+        skipCodeCoverage: false
+        enableTestReporting: true
+        testHubAppName: "matbot-multi-agents"
+        cpd: ${concordProcessId}
+        BUILDURL: ${BUILD_URL}
+        LOOPERID: ${LOOPER_RUN_ID}
+        sonarVersion: latest
+        sonarEnable: true
+        job_name: $JOB_NAME
+        job_url: $JOB_URL
+        jenkins_url: $JENKINS_URL
+        github_repo_git_url: $GITHUB_REPO_GIT_URL
+        github_branch_name: $GITHUB_BRANCH_NAME
+        looper_job_type: $LOOPER_JOB_TYPE
+        sonarProjKey: MATBOT-MULTI-AGENTS
+        commitId: "{{$.kitt.build.commitEvent.commitId}}"
+        repoName: "{{$.kitt.build.commitEvent.repo.name}}"
+        orgName: "{{$.kitt.build.commitEvent.repo.org}}"
+        pullRequestId: "{{$.kitt.build.commitEvent[?(@.prId)].prId}}"
+        eventType: "{{$.kitt.build.commitEvent.event}}"
+        prTargetBranch: "{{$.kitt.build.commitEvent.branch}}"
+        sonarOpts: "-Dproject.settings=sonar-project.properties -Dsonar.projectVersion={{$.kitt.build.version}}"
+        sonarBranchOpts: "-Dsonar.branch.name={{$.kitt.build.commitEvent.currentBranch}}"
+        sonarPROpts: "-Dsonar.pullrequest.github.repository={{$.kitt.build.commitEvent.repo.org}}/{{$.kitt.build.commitEvent.repo.name}} -Dsonar.pullrequest.branch={{$.kitt.build.commitEvent.currentBranch}} -Dsonar.pullrequest.base={{$.kitt.build.commitEvent.branch}} -Dsonar.scm.revision={{$.kitt.build.commitEvent.commitId}}"
+  postBuild:
+    - task:
+        name: deployApp
+        kittFilePath: packs/gif_tote_validation/kitt.yml
+        tag: ""
+        branch: "{{$.kitt.build.commitEvent.currentBranch}}"
+        sync: false
+
+    - task:
+        name: deployApp
+        kittFilePath: packs/offer_intelligence/kitt.yml
+        tag: ""
+        branch: "{{$.kitt.build.commitEvent.currentBranch}}"
+        sync: false
+deploy:
+  skip: false
+  tenantSite: USGM
+  namespace: matbot-stg
+  releaseType:
+    strategy: normal
+    rollbackOnError: false
+    waitForReady: true
+    deployTimeout: 900
+
+  # Parent GSLB → stage.agentfactory.matbot.walmart.com (CNAME +
+  # cert-manager Certificate + Istio Gateway). Pack children own their own.
+  gslb:
+    enabled: true
+    strategy: stage
+    lbRoutings:
+      stage:
+        cnames: [stage.agentfactory.matbot.walmart.com]
+        ingressHosts: [stage.agentfactory.matbot.walmart.com]
+        matchStages: [stage]
+      # prod:
+      #   cnames: [agentfactory.matbot.walmart.com]
+      #   ingressHosts: [agentfactory.matbot.walmart.com]
+      #   matchStages: [prod]
+
+  # helm.values defaults inherited by every child service.
+  helm:
+    values:
+      container:
+        image: item-ops-docker/matbot-multi-agents
+        tag: "{{$.kitt.build.version}}"
+      env:
+        CLUSTER_ID: "{{$.kittExec.currentCluster.clusterId}}"
+      metadata:
+        labels:
+          wm.app: ITEM-OPS-MATBOT-MULTI-AGENTS
+        annotations:
+          sidecar.istio.io/inject: "true"
+          traffic.sidecar.istio.io/excludeOutboundPorts: "8080,8300,15020,8200,15000,15001,15004,15006,15008,15009,15021,15053,15090"
+          sidecar.istio.io/proxyCPU: 100m
+          sidecar.istio.io/proxyCPULimit: 100m
+          sidecar.istio.io/proxyMemory: 200M
+          sidecar.istio.io/proxyMemoryLimit: 200M
+      networking:
+        internalPort: "8000"
+        externalPort: "8000"
+        httpsEnabled: true
+      # /readyz returns 503 when PostgreSQL is unavailable (LB sheds the pod).
+      # /healthz returns 200 unless the process itself is broken.
+      readinessProbe:
+        enabled: "true"
+        path: "/readyz"
+        port: 8000
+        headers: "*/*"
+        wait: 10
+        failureThreshold: 3
+        probeInterval: 20
+      livenessProbe:
+        enabled: "true"
+        path: "/healthz"
+        port: 8000
+        headers: "*/*"
+        failureThreshold: 5
+        probeInterval: 20
+        wait: 10
+      global:
+        metrics:
+          remoteWriteSampleLimit: 500
+
+  stages:
+    - name: stage
+      refs: [main]
+      target:
+        cluster_id: ["uscentral-stage-wmt-005", "useast-stage-wmt-004"]
+      preDeploy:
+        - task:
+            name: testExecutor
+            testType: unit
+            mode: Passive
+            testParameters:
+              gitUrl: https://gecgithub01.walmart.com/item-ops/matbot-multi-agents.git
+              branch: '{{$.kitt.build.commitEvent.currentBranch}}'
+              flow: unit_tests
+      postDeploy:
+        - concord:
+            name: Resiliency Test
+            enabled: true
+            arguments:
+              config:
+                resiliencyTest:
+                  useApprovalForm: false
+                  slackChannel: '{{$.kitt.notify.slack.channelName}}'
+                  workloadId: "{{$.kittExec.currentStage.workloadId}}"
+                  artifactName: '{{$.kitt.build.artifact}}'
+                  artifactVersion: "{{$.kitt.build.version}}"
+                  useTemplate: true
+                  mode: Passive
+                  templatizedCommonParams:
+                    wcnp:
+                      clusterID: "{{$.kittExec.currentCluster.clusterId}}"
+                      namespace: "{{$.kitt.deploy.namespace}}"
+                      containerNames: matbot-multi-agents
+                      appName: ITEM-OPS-MATBOT-MULTI-AGENTS
+                  overrideTemplate: false
+        - concord:
+            name: Performance Test
+            action: start
+            org: SDE-CloudNative
+            project: Test-Executors
+            repo: Automaton
+            sync: true
+            arguments:
+              gitUrl: https://gecgithub01.walmart.com/item-ops/matbot-multi-agents.git
+              branch: '{{$.kitt.build.commitEvent.currentBranch}}'
+              flow: performance_tests
+              userid: 'SVCmatbot'
+              apmId: "{{$.kitt.managedNamespace.apmId}}"
+              workloadId: "{{$.kittExec.currentStage.workloadId}}"
+              version: '{{$.kitt.build.version}}'
+            out: results
+      helm:
+        values:
+          metadata:
+            labels:
+              wm.env: stage
+          env:
+            APP_ENV: stg
+            ENV_FOR_DYNACONF: stage
+            K8_FRIENDLYENVIRONMENT: Stage
+            IS_PARENT: "true"
+            PACK_ID: devops_health_check
+            DEFAULT_PACK_ID: devops_health_check
+          # Parent service is a thin landing-page + reference-pack process.
+          # Real packs set their own footprint.
+          min:
+            cpu: 100m
+            memory: 256Mi
+          max:
+            cpu: 500m
+            memory: 512Mi
+          scaling:
+            cpuPercent: 50
+            min: 1
+            max: 2
+          # Akeyless secrets-common.toml at /etc/secrets. Pack children
+          # layer secrets-pack.toml on top..
+          secrets:
+            akeyless: true
+            config:
+              akeyless:
+                path: /Prod/WCNP/homeoffice/Hyperloop-monitoring/matbot-multi-agents
+              path: /etc/secrets
+            files:
+              - destination: secrets-common.toml
+                content: '{{$.kittExec.currentStage.name}}/config'
+
+    # - name: prod
+    #   refs: [main]
+    #   target:
+    #     cluster_id: ["eus2-prod-a15", "uswest-prod-az-004"]
+    #   approvers:
+    #     groups:
+    #       - "Hyperloop-monitoring"
+    #   helm:
+    #     values:
+    #       metadata:
+    #         labels:
+    #           wm.env: prod
+    #       env:
+    #         APP_ENV: prod
+    #         ENV_FOR_DYNACONF: production
+    #         K8_FRIENDLYENVIRONMENT: Production
+    #         PACK_ID: devops_health_check
+    #         DEFAULT_PACK_ID: devops_health_check

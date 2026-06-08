@@ -1,0 +1,72 @@
+/* LD Portable – WCPMwebFooter */
+
+.ld-wcp-mweb-footer-root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+/* ---------- Feedback section ---------- */
+.ld-wcp-mweb-footer-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.ld-wcp-mweb-footer-feedback-text {
+  margin: 0;
+  color: #2e2f32;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* ---------- Footer nav ---------- */
+.ld-wcp-mweb-footer-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px 8px;
+  gap: 0;
+  border-top: 1px solid #e3e4e5;
+  border-bottom: 1px solid #e3e4e5;
+}
+
+.ld-wcp-mweb-footer-link {
+  display: block;
+  color: #2e2f32;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-decoration: none;
+  padding: 8px 0;
+}
+
+.ld-wcp-mweb-footer-privacy-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #2e2f32;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-decoration: none;
+  padding: 8px 0;
+}
+
+.ld-wcp-mweb-footer-privacy-icon {
+  flex-shrink: 0;
+}
+
+/* ---------- Copyright ---------- */
+.ld-wcp-mweb-footer-copyright {
+  margin: 0;
+  padding: 8px 16px 20px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.33;
+  color: #74767c;
+}

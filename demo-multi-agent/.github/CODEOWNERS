@@ -1,0 +1,4 @@
+# Every PR requires approval from at least one of these owners.
+# GitHub will request reviews from all three; any one approval satisfies
+# the required code owner review gate on main.
+*   @m0g0m5q @r0m08w0 @s0s0f76

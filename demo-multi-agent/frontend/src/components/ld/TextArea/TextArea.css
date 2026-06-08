@@ -1,0 +1,120 @@
+/* LD Portable – TextArea */
+/* TextArea */
+.ld-textarea-root {
+  width: 100%;
+}
+
+.ld-textarea-label {
+  margin-bottom: 0.25rem;
+}
+
+.ld-textarea-container {
+  background: var(--ld-semantic-color-field-fill, #ffffff);
+  border-radius: 0.25rem;
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-field-border, #909196);
+  position: relative;
+}
+.ld-textarea-container:hover, .hover .ld-textarea-container {
+  background: var(--ld-semantic-color-field-fill, #ffffff);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-field-border-hovered, #2e2f32);
+}
+.ld-textarea-container:focus-within, .focus .ld-textarea-container {
+  background: var(--ld-semantic-color-field-fill, #ffffff);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-field-border-focused, #2e2f32);
+}
+.ld-textarea-readOnly .ld-textarea-container {
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-field-border, #909196);
+}
+.ld-textarea-disabled .ld-textarea-container {
+  background: var(--ld-semantic-color-field-fill, #ffffff);
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-field-border-disabled, #babbbe);
+}
+.ld-textarea-isMagic .ld-textarea-container {
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-action-focus-outline, #0053E2);
+}
+.ld-textarea-isMagic .ld-textarea-container:hover, .hover.ld-textarea-isMagic .ld-textarea-container {
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-action-focus-outline, #0053E2);
+}
+.ld-textarea-isMagic .ld-textarea-container:focus-within, .focus.ld-textarea-isMagic .ld-textarea-container {
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-action-focus-outline, #0053E2);
+}
+.ld-textarea-error .ld-textarea-container {
+  background: var(--ld-semantic-color-field-fill, #ffffff);
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-field-border-negative, #ea1100);
+}
+.ld-textarea-error .ld-textarea-container:hover, .hover.ld-textarea-error .ld-textarea-container {
+  background: var(--ld-semantic-color-field-fill, #ffffff);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-field-border-negative, #ea1100);
+}
+.ld-textarea-error .ld-textarea-container:focus-within, .focus.ld-textarea-error .ld-textarea-container {
+  background: var(--ld-semantic-color-field-fill, #ffffff);
+  box-shadow: inset 0 0 0 0.125rem var(--ld-semantic-color-field-border-negative, #ea1100);
+}
+.ld-textarea-error.ld-textarea-readOnly .ld-textarea-container {
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-field-border, #909196);
+}
+.ld-textarea-error.ld-textarea-disabled .ld-textarea-container {
+  background: var(--ld-semantic-color-field-fill, #ffffff);
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-field-border-disabled, #babbbe);
+}
+.ld-textarea-isMagic.ld-textarea-readOnly .ld-textarea-container {
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-action-focus-outline, #0053E2);
+}
+.ld-textarea-isMagic.ld-textarea-disabled .ld-textarea-container {
+  box-shadow: inset 0 0 0 0.0625rem var(--ld-semantic-color-field-border-disabled, #babbbe);
+}
+
+.ld-textarea-value {
+
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  box-sizing: border-box;
+  color: var(--ld-semantic-color-field-text-on-fill, #2e2f32);
+  display: block;
+  margin: 0;
+  outline: none;
+  resize: none;
+  width: 100%;
+}
+.ld-textarea-disabled .ld-textarea-value, .ld-textarea-readOnly .ld-textarea-value {
+  cursor: default;
+}
+.ld-textarea-disabled .ld-textarea-value {
+  color: var(--ld-semantic-color-field-text-on-fill-disabled, #babbbe);
+  opacity: 1;
+  -webkit-text-fill-color: var(--ld-semantic-color-field-text-on-fill-disabled, #babbbe);
+}
+.ld-textarea-large .ld-textarea-value {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5rem;
+  min-height: 8rem;
+  padding: 1rem 1rem;
+}
+.ld-textarea-small .ld-textarea-value {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+  min-height: 6.25rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.ld-textarea-helperTextContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.ld-textarea-maxLength {
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1rem;
+  color: var(--ld-semantic-color-field-text-subtle-on-fill, #515357);
+  margin-left: 1rem;
+  white-space: nowrap;
+}
+.ld-textarea-disabled .ld-textarea-maxLength {
+  color: var(--ld-semantic-color-field-text-on-fill-disabled, #babbbe);
+  cursor: default;
+}

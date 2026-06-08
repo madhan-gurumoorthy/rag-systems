@@ -1,0 +1,42 @@
+[
+  {
+    "id": "eval-limo-pass",
+    "description": "ODIN, IQS, Consolidated all match → PASS.",
+    "input": {
+      "external_ref": "E981AC30C2C635B999DEEEF8DF07196D",
+      "work_item_text": "Validate dimensions for offer E981AC30C2C635B999DEEEF8DF07196D",
+      "offer_id": "E981AC30C2C635B999DEEEF8DF07196D"
+    },
+    "expected": { "verdict": "PASS", "runbook": "RBK-LIMO-PASS" }
+  },
+  {
+    "id": "eval-limo-fail-odin-iqs",
+    "description": "ODIN and IQS disagree → FAIL_ODIN_IQS.",
+    "input": {
+      "external_ref": "AAAABBBBCCCCDDDDEEEEFFFF00001111",
+      "work_item_text": "Validate offer AAAABBBBCCCCDDDDEEEEFFFF00001111",
+      "offer_id": "AAAABBBBCCCCDDDDEEEEFFFF00001111"
+    },
+    "expected": { "verdict": "FAIL_ODIN_IQS", "runbook": "RBK-LIMO-FAIL-ODIN-IQS" }
+  },
+  {
+    "id": "eval-limo-inv-odin-missing",
+    "description": "ODIN missing, IQS present → INVESTIGATION_ODIN_MISSING.",
+    "input": {
+      "external_ref": "1111222233334444555566667777AAAA",
+      "work_item_text": "ODIN looks empty for 1111222233334444555566667777AAAA, can you check?",
+      "offer_id": "1111222233334444555566667777AAAA"
+    },
+    "expected": { "verdict": "INVESTIGATION_ODIN_MISSING", "runbook": "RBK-LIMO-INV-ODIN-MISSING" }
+  },
+  {
+    "id": "eval-limo-blocked-both",
+    "description": "Both ODIN and IQS missing → BLOCKED.",
+    "input": {
+      "external_ref": "DEADBEEFDEADBEEFDEADBEEFDEADBEEF",
+      "work_item_text": "Validate offer DEADBEEFDEADBEEFDEADBEEFDEADBEEF dimensions",
+      "offer_id": "DEADBEEFDEADBEEFDEADBEEFDEADBEEF"
+    },
+    "expected": { "verdict": "BLOCKED", "runbook": "RBK-LIMO-BLOCKED-BOTH" }
+  }
+]

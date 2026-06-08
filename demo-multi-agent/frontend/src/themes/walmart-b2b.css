@@ -1,0 +1,37 @@
+/**
+ * Walmart B2B Theme
+ * Auto-generated from Airtable — do not edit manually
+ */
+
+[data-ld-theme="Walmart B2B"] {
+  --ld-semantic-color-action-fill-primary: #002e99;
+  --ld-semantic-color-action-fill-primary-focused: #002185;
+  --ld-semantic-color-action-fill-primary-hovered: #002185;
+  --ld-semantic-color-action-fill-primary-pressed: #001e60;
+  --ld-semantic-color-border-activated: #002e99;
+  --ld-semantic-color-bottomNav-text-onFill-activated: #001e60;
+  --ld-semantic-color-bottomNav-text-onFill-activated-focused: #001e60;
+  --ld-semantic-color-bottomNav-text-onFill-activated-hovered: #001e60;
+  --ld-semantic-color-bottomNav-text-onFill-activated-pressed: #001e60;
+  --ld-semantic-color-fill-activated: #001e60;
+  --ld-semantic-color-fill-activated-focused: #002e99;
+  --ld-semantic-color-fill-activated-hovered: #002e99;
+  --ld-semantic-color-fill-activated-pressed: #001e60;
+  --ld-semantic-color-fill-brand: #001e60;
+  --ld-semantic-color-fill-brand-bold: #0e002e;
+  --ld-semantic-color-text-activated: #001e60;
+  --ld-semantic-color-text-brand: #001e60;
+  --ld-semantic-color-text-onFill-brand-subtle: #001e60;
+  --ld-semantic-color-topNav-fill: #001e60;
+  --wcp-semantic-color-action-fill-primary-alt: #4dbdf5;
+  --wcp-semantic-color-action-fill-primary-alt-focused: #189ee2;
+  --wcp-semantic-color-action-fill-primary-alt-hovered: #189ee2;
+  --wcp-semantic-color-action-fill-primary-alt-pressed: #0083c7;
+  --wcp-semantic-color-action-text-onFill-primary-alt: #0e002e;
+  --wcp-semantic-color-action-text-onFill-primary-alt-focused: #0e002e;
+  --wcp-semantic-color-action-text-onFill-primary-alt-hovered: #0e002e;
+  --wcp-semantic-color-action-text-onFill-primary-alt-pressed: #0e002e;
+  --wcp-semantic-color-surface-overlay-brand-bold: #001e60;
+  --wcp-semantic-color-surface-overlay-brand-subtle: #4dbdf5;
+  --wcp-semantic-media-topNav-logo-compact: var(--wcp-primitive-media-logo);
+}
